@@ -115,7 +115,7 @@ class simple_hash {
 		set_seed_ind(seed);
 	}
 
-	void set_seed_ind( int seed ) {
+	void set_seed_ind( unsigned int seed ) {
 		assert( seed < num_seeds );
 		a = predef_a[seed];
 		b = predef_b[seed];

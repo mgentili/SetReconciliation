@@ -6,7 +6,7 @@
 #include <deque>
 #include <algorithm>
 #include <set>
-
+#include "MurmurHash2.hpp"
 //--IBLT STUFF
 
 //structure of a bucket within an IBLT
@@ -65,12 +65,12 @@ class IBLT {
   public:
   	typedef IBLT_bucket<key_type> bucket_type;
   	typedef std::vector<bucket_type> IBLT_type;
+  	int num_buckets;
+	int num_hashfns;
+	int buckets_per_subIBLT;
   	std::vector<IBLT_type> subIBLTs;
   	hasher key_hasher;
   	std::vector<hasher> sub_hashers; 
-	int num_buckets;
-	int buckets_per_subIBLT;
-	int num_hashfns;
 
 	//seed num_hashfns different hashfunctions for each subIBLT
 	IBLT(int bucket_count, int num_hashfns): 

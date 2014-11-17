@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <assert.h>
 #include <cstdlib>
-#include "MurmurHash2.hpp"
 #include "basicIBLT.hpp"
 
 //--TESTING CODE--
