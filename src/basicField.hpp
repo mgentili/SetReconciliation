@@ -8,7 +8,7 @@ Basic Field:
 N: base of field
 key_type: type of object to be stored in field
 key_bits: length of object to be stored in bits
-Example: N=2, key_bits = 8, would correspond to all things in 2^8 (so characters)
+Example: N=2, key_bits= 8, would correspond to all things in 2^8 (so characters)
 **/
 template<int N, int key_bits>
 class Field {
@@ -19,8 +19,8 @@ class Field {
         assert( N <= (1 << sizeof(uint8_t)*8 ));
     }
 
-    void add( std::string& key) {
-        add(key.c_str());
+    void add( std::string* key) {
+        add(key->c_str());
     }
 
     void add( const void* key ) {
@@ -33,8 +33,8 @@ class Field {
         }
     }
 
-    void remove( std::string& key) {
-        remove(key.c_str());
+    void remove( std::string* key) {
+        remove(key->c_str());
     }
 
     void remove(const void* key) {
@@ -63,12 +63,25 @@ class Field {
         return true;
     }
     
+    bool extract_key( std::string* key) {
+        char buf[key_bits/8] = {};
+        bool res = extract_key(buf);
+        key->assign(buf);
+        return res;
+    }
+
     //returns true if extractable key exists (all bits are <=1), false otherwise
     bool extract_key( void* key) {
         if( !can_divide_by(1) )
             return false;
     	extract_key( key, 1);
         return true;
+    }
+
+    void extract_key( std::string* key, int n) {
+        char buf[key_bits/8] = {};
+        extract_key( buf, n);
+        key->assign(buf);
     }
 
     //assumes that key is extractable. key should appear n times

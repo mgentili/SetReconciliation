@@ -36,8 +36,8 @@ class TabulationHashing {
 
     //takes in key, casts each block into a chunk that can then be used as in index
     // into the table of random numbers
-  	hash_type hash( std::string& key ) const {
-      return hash(key.c_str());
+  	hash_type hash( std::string* key ) const {
+      return hash(key->c_str());
   	}
 
     hash_type hash( const void* key ) const {

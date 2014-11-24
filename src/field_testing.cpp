@@ -6,32 +6,30 @@
 #include "basicField.hpp"
 
 void testFieldChar() {
-	char buffer[100] = {};
+	std::string buffer;
 	Field<3, 64> f;
-	const char* key1 = "12345678";
-	const char* key2 = "23456789";
-	printf("Adding key %s\n", key1);
-	f.add(key1);
+	std::string key1 = "12345678";
+	std::string key2 = "23456789";
+	printf("Adding key %s\n", key1.c_str());
+	f.add(&key1);
 	f.print_contents();
-	if( f.extract_key(buffer) ) {
-		printf("Successfully extracted key: %s\n", buffer);
+	if( f.extract_key(&buffer) ) {
+		printf("Successfully extracted key: %s\n", buffer.c_str());
 	} else {
 		printf("Failed to extract key\n");
 	}
-	printf("Adding key %s\n", key2);
-	f.add(key2);
+	printf("Adding key %s\n", key2.c_str());
+	f.add(&key2);
 	f.print_contents();
-	memset(buffer, 0, 100);
-	if( f.extract_key(buffer) ) {
-		printf("Successfully extracted key: %s\n", buffer);
+	if( f.extract_key(&buffer) ) {
+		printf("Successfully extracted key: %s\n", buffer.c_str());
 	} else {
 		printf("Failed to extract key\n");
 	}
-	printf("Removing key %s\n", key1);
-	f.remove(key1);
-	memset(buffer, 0, 100);
-	if( f.extract_key(buffer) ) {
-		printf("Successfully extracted key: %s\n", buffer);
+	printf("Removing key %s\n", key1.c_str());
+	f.remove(&key1);
+	if( f.extract_key(&buffer) ) {
+		printf("Successfully extracted key: %s\n", buffer.c_str());
 	} else {
 		printf("Failed to extract key\n");
 	}
@@ -69,8 +67,8 @@ void testFieldMultiAdd() {
 		f.add(&x);
 		f.print_contents();
 	}
-
 }
+
 int main() {
 	testFieldChar();
 	testFieldInt();

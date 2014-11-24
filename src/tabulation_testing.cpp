@@ -14,7 +14,7 @@ int testString() {
 	TB* tb = new TB;
 	tb->set_seed(0);
 	std::string key = "12345678123456781234567812345678";
-	printf("%ld\n", (long) tb->hash(key) );
+	printf("%ld\n", (long) tb->hash(&key) );
 	return 1;
 }
 
