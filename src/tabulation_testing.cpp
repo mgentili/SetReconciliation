@@ -3,7 +3,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <string>
-#include "TabulationHashing.hpp"
+#include "tabulation_hashing.hpp"
 #include "basicIBLT.hpp"
 
 int testString() {
