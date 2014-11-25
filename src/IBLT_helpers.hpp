@@ -55,9 +55,9 @@ void set_union(std::unordered_set<key_type>& keys1, std::unordered_set<key_type>
 }
 
 template <typename key_type>
-void set_union(std::vector<key_type>& key_sets, std::unordered_set<key_type>& final_set) {
+void set_union(std::vector<std::unordered_set<key_type> >& key_sets, std::unordered_set<key_type>& final_set) {
 	for(auto it1 = key_sets.begin(); it1 != key_sets.end(); ++it1) {
-		for(auto it2 = (*it1).begin(); it2 != (*it2).end(); ++it2) {
+		for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
 			final_set.insert(*it2);
 		}
 	}
@@ -86,7 +86,7 @@ void generate_sample_keys(int num_shared_keys, int num_distinct_keys,
 template <typename key_type>
 void generate_sample_keys(int num_shared_keys, int num_distinct_keys,
 							std::unordered_set<key_type>& shared_keys,
-							std::vector<std::unordered_set<key_type> > key_sets) {
+							std::vector<std::unordered_set<key_type> >& key_sets) {
 	std::unordered_set<key_type> all_keys;
 	generate_distinct_keys<key_type>(num_shared_keys + key_sets.size()*num_distinct_keys, all_keys);
 	

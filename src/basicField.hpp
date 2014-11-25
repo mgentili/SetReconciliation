@@ -5,6 +5,7 @@
 
 /**
 Basic Field:
+Note: Only works for key_bits > 8
 N: base of field
 key_type: type of object to be stored in field
 key_bits: length of object to be stored in bits
@@ -17,6 +18,7 @@ class Field {
     
     Field()	{
         assert( N <= (1 << sizeof(uint8_t)*8 ));
+        //assert( key_bits % 8 == 0 && key_bits >= 8);
     }
 
     void add( std::string* key) {

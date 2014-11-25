@@ -69,10 +69,20 @@ void testFieldMultiAdd() {
 	}
 }
 
+void testBitField() {
+	Field<5, 1> f;
+	int x = 1;
+	for(int i = 0; i < 3; ++i) {
+		printf("Removing key %d\n", x);
+		f.remove(&x);
+		f.print_contents();
+	}
+}
 int main() {
 	testFieldChar();
 	testFieldInt();
 	testFieldRemove();
 	testFieldMultiAdd();
+	testBitField();
 	return 1;
 }

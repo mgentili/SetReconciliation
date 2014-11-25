@@ -20,32 +20,34 @@ class multiIBLT_bucket {
   	typedef multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> this_bucket_type;
 	Field<n_parties, key_bits> key_sum;
 	Field<n_parties, 8*sizeof(hash_type)> hash_sum;
-	int count;
+	Field<n_parties, 1> count;
 
 	multiIBLT_bucket(): key_sum(), hash_sum(), count() {}
 
 	void add(const key_type* k, const hash_type* h) {
 		key_sum.add(k);
 		hash_sum.add(h);
-		count++;
+		int x = 1;
+		count.add(&x);
 	}
 
 	void add(const this_bucket_type& counterparty_bucket) {
 		key_sum.add(counterparty_bucket.key_sum);
 		hash_sum.add(counterparty_bucket.hash_sum);
-		count += counterparty_bucket.count;
+		count.add(counterparty_bucket.count);
 	}
 
 	void remove(const key_type* k, const hash_type* h) {
 		key_sum.remove(k);
 		hash_sum.remove(h);
-		count--;
+		int x = 1;
+		count.remove(&x);
 	}
 
 	void remove(const this_bucket_type& counterparty_bucket) {
 		key_sum.remove(counterparty_bucket.key_sum);
 		hash_sum.remove(counterparty_bucket.hash_sum);
-		count -= counterparty_bucket.count;
+		count.remove(counterparty_bucket.count);
 	}
 
 	void print_contents() const {
@@ -53,7 +55,8 @@ class multiIBLT_bucket {
 		key_sum.print_contents();
 		printf("Hash_sum:");
 		hash_sum.print_contents();
-		printf("Count: %d\n", count);
+		printf("Count:");
+		count.print_contents();
 	}
 
 	bool operator==( const multiIBLT_bucket& other ) const
@@ -157,7 +160,7 @@ class multiIBLT {
 				curr_bucket = peelable_keys.front();
 				peelable_keys.pop_front();
 				key_type peeled_key;
-				curr_bucket.key_sum.extract_key(&peeled_key, curr_bucket.count);
+				curr_bucket.key_sum.extract_key(&peeled_key, curr_bucket.count.args[0]);
 				//peeled_keys.push_back(peeled_key);
 				if( peeled_keys.insert(peeled_key).second ) {
 					peel_key( curr_bucket, peelable_keys );
@@ -190,7 +193,7 @@ class multiIBLT {
 					peelable_keys.emplace_back(subIBLTs[i][j]);
 					return true;
 				}
-				if( subIBLTs[i][j].count != 0 )
+				if( subIBLTs[i][j].count.args[0] != 0 )
 					has_multiple_keys = true;
 			}
 		}
@@ -205,7 +208,7 @@ class multiIBLT {
 		key_type buf;
 		int bucket_index;
 		for(int i = 0; i < num_hashfns; ++i) {
-			peelable_bucket.key_sum.extract_key(&buf, peelable_bucket.count);
+			peelable_bucket.key_sum.extract_key(&buf, peelable_bucket.count.args[0]);
 			bucket_index = get_bucket_index(&buf, i);
 			subIBLTs[i][bucket_index].remove(peelable_bucket);
 
@@ -229,7 +232,7 @@ class multiIBLT {
 	//Will need to iterate from -nparties+1 to n_parties-1 (skipping 0)
 	//TODO: malloc space for key here?
 	bool can_peel(bucket_type& curr_bucket) {
-		if( curr_bucket.count == 0 || abs(curr_bucket.count) >= n_parties ) {
+		if( curr_bucket.count.args[0] == 0 || abs(curr_bucket.count.args[0]) >= n_parties ) {
 			//printf("Current bucket count is: %d\n", curr_bucket.count);
 			return false;
 		}
@@ -238,7 +241,7 @@ class multiIBLT {
 		for(int i = 1; i < n_parties; ++i) {
 			if( curr_bucket.key_sum.can_divide_by( i )
 				&& curr_bucket.hash_sum.can_divide_by( i )
-				&& curr_bucket.count == i ) {
+				&& curr_bucket.count.args[0] == i ) {
 				curr_bucket.key_sum.extract_key(&buf, i);
 				curr_bucket.hash_sum.extract_key(&expected_hash, i);
 				hash_type actual_hash = key_hasher.hash(&buf);
