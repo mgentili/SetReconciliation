@@ -1,5 +1,5 @@
-#ifndef BASIC_IBLT
-#define BASIC_IBLT
+#ifndef _BASIC_IBLT
+#define _BASIC_IBLT
 
 #include <vector>
 #include <stdint.h>
@@ -64,7 +64,9 @@ Parameters:
 	num_hashfns: number of hash functions (equivalent to k in the paper)
 	hasher: type of hashfunction (should be able to hash keytype)
 **/
-template <typename key_type, typename hash_type = uint64_t, typename hasher = TabulationHashing<8*sizeof(key_type), hash_type> >
+template <typename key_type, 
+		  typename hash_type = uint64_t, 
+		  typename hasher = TabulationHashing<key_type, 8*sizeof(key_type), hash_type> >
 //template <typename key_type, typename hash_type = uint64_t, typename hasher = simple_hash<key_type> >
 class basicIBLT {
   public:
@@ -105,7 +107,7 @@ class basicIBLT {
 	//insert a new key into our IBLT
 	void insert_key(key_type key) {
 		int bucket_index;
-		hash_type hashval = key_hasher.hash(&key);
+		hash_type hashval = key_hasher.hash(key);
 		for(int i = 0; i < num_hashfns; ++i) {
 			bucket_index = get_bucket_index(key, i);
 			
@@ -115,7 +117,7 @@ class basicIBLT {
 
 	void remove_key(key_type key) {
 		int bucket_index;
-		hash_type hashval = key_hasher.hash(&key);
+		hash_type hashval = key_hasher.hash(key);
 		for(int i = 0; i < num_hashfns; ++i) {
 			bucket_index = get_bucket_index(key, i);
 			
@@ -194,7 +196,7 @@ class basicIBLT {
 			//printf("Current bucket count is: %d\n", curr_bucket.count);
 			return false;
 		}
-		return( key_hasher.hash(&curr_bucket.key_sum) == curr_bucket.hash_sum );
+		return( key_hasher.hash(curr_bucket.key_sum) == curr_bucket.hash_sum );
 	}
 
 	void get_bucket(key_type key, int index, bucket_type& curr_bucket) {
@@ -204,7 +206,7 @@ class basicIBLT {
 	//returns the bucket index of given key in given subIBLT
 	uint64_t get_bucket_index(key_type key, int subIBLT) {
 		assert( subIBLT >= 0 && subIBLT < num_hashfns );
-		return sub_hashers[subIBLT].hash(&key) % buckets_per_subIBLT;
+		return sub_hashers[subIBLT].hash(key) % buckets_per_subIBLT;
 	}
 
 	void print_contents() {

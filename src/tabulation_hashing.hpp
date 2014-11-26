@@ -9,20 +9,18 @@
 IMPROVEMENTS TODO:
 1) Make vector instead of template? (easier to test different sizes quickly)
 **/
-
 template <int key_bits, typename hash_type = uint64_t, typename chunk_type = uint16_t>
-class TabulationHashing {
+class TabulationHashingBase {
   public:
-  	static const int table_first_dim = key_bits/(8*sizeof(chunk_type));
-  	static const uint64_t table_second_dim = 1UL << (8*sizeof(chunk_type));
-  	hash_type table[table_first_dim][table_second_dim];
-  	std::mt19937_64 gen; //mersenne twister for generating random 64-bit integers
+    static const int table_first_dim = key_bits/(8*sizeof(chunk_type));
+    static const uint64_t table_second_dim = 1UL << (8*sizeof(chunk_type));
+    hash_type table[table_first_dim][table_second_dim];
+    std::mt19937_64 gen; //mersenne twister for generating random 64-bit integers
 
-    TabulationHashing() {}
-
-  	TabulationHashing( uint64_t s ) {
-  		set_seed(s);
-  	}
+    TabulationHashingBase() {}
+    TabulationHashingBase( uint64_t s ) {
+      set_seed(s);
+    }
 
     void set_seed( uint64_t s ) {
       gen.seed(s);
@@ -33,24 +31,53 @@ class TabulationHashing {
         }
       }
     }
+};
 
-    //takes in key, casts each block into a chunk that can then be used as in index
-    // into the table of random numbers
-  	hash_type hash( std::string* key ) const {
-      return hash(key->c_str());
-  	}
+template <typename key_type, int key_bits, typename hash_type = uint64_t, typename chunk_type = uint16_t>
+class TabulationHashing: public TabulationHashingBase<key_bits, hash_type, chunk_type> {
+  public:
+    typedef TabulationHashingBase<key_bits, hash_type, chunk_type> TB;
+    using TB::table;
+    using TB::table_first_dim;
+    using TB::table_second_dim;
 
-    hash_type hash( const void* key ) const {
+    hash_type hash( const key_type& key ) const {
       hash_type ret = 0;
+      key_type tmp = key;
       for(int i = 0; i < table_first_dim; ++i) {
-        //std::cout << "Next chunk" << ((chunk_type*) key)[i] << ", " << table[i][((chunk_type*) key)[i]] << std::endl;
-
-        //printf("Next chunk: %d, %d\n", ((chunk_type*) key)[i], table[i][((chunk_type*) key)[i]]);
-        ret ^= table[i][((chunk_type*) key)[i]];
+        chunk_type curr_chunk = (chunk_type) tmp;
+        ret ^= table[i][curr_chunk];
+        tmp = tmp >> (8*sizeof(chunk_type));
       }
       return ret;
     }
 
 };
+
+template <int key_bits, typename hash_type, typename chunk_type>
+class TabulationHashing<std::string, key_bits, hash_type, chunk_type>: 
+    public TabulationHashingBase<key_bits, hash_type, chunk_type> {
+  public:
+    typedef TabulationHashingBase<key_bits, hash_type, chunk_type> TB;
+    using TB::table;
+    using TB::table_first_dim;
+    using TB::table_second_dim;
+
+    //takes in key, casts each block into a chunk that can then be used as in index
+    // into the table of random numbers
+    hash_type hash( const std::string& key ) const {
+      return hash(key.c_str());
+    }
+
+    hash_type hash( const char* key) const {
+      hash_type ret = 0;
+      for(int i = 0; i < table_first_dim; ++i) {
+        ret ^= table[i][((chunk_type*) key)[i]];
+      }
+      return ret;
+    }
+};
+
+
 
 #endif
