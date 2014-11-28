@@ -171,6 +171,30 @@ void testFieldSum() {
 	f1.remove(f2);
 	f1.print_contents();
 }
+
+void test2FieldInt() {
+	Field<2, uint64_t> f1;
+	uint64_t x1 = 1;
+	uint64_t x2 = 1343415;
+	printf("Adding key: %lu\n", x1);
+	f1.add(x1);
+	f1.print_contents();
+	printf("Adding key: %lu\n", x2);
+	f1.add(x2);
+	f1.print_contents();
+}
+
+void test2FieldString() {
+	Field<2, std::string, 64> f1;
+	std::string buf;
+	std::string key1 = "12345678";
+	printf("Adding key: %s\n", key1.c_str());
+	f1.add(key1);
+	f1.print_contents();
+	f1.add(key1);
+	printf("Extracted key: %s\n", buf.c_str());
+}
+
 int main() {
 	testFieldChar();
 	testFieldInt();
@@ -179,6 +203,7 @@ int main() {
 	testSimpleField();
 	testFieldSum();
 	testFieldMultiAdd();
-	
+	test2FieldInt();
+	test2FieldString();
 	return 1;
 }

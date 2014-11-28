@@ -36,24 +36,24 @@ class SimpleField {
     }
 };
 
-template<int N, int key_bits>
+template<int N, int key_bits, typename chunk_type = uint8_t>
 class BaseField {
   public:
-    uint8_t args[key_bits] = {};
+    chunk_type arg[key_bits] = {};
     BaseField() {
-        assert( N <= (1 << sizeof(uint8_t)*8 ));
+        assert( N <= (1 << sizeof(chunk_type)*8 ));
         //assert( key_bits % 8 == 0 && key_bits >= 8);
     }
 
     // void add( const BaseField<N, key_bits> field_elt) {
     //     for(int i = 0; i < key_bits; ++i) {
-    //         args[i] = field_add(args[i], field_elt.args[i]);
+    //         arg[i] = field_add(arg[i], field_elt.arg[i]);
     //     }
     // }
 
     // void remove(const BaseField<N, key_bits> field_elt) {
     //     for(int i = 0; i < key_bits; ++i) {
-    //         args[i] = field_add(args[i], (-1)*field_elt.args[i]);
+    //         arg[i] = field_add(arg[i], (-1)*field_elt.arg[i]);
     //     }
     // }
 
@@ -61,7 +61,7 @@ class BaseField {
     bool can_divide_by(int n) {
         assert(n != 0);
         for(int i = 0; i < key_bits; ++i) {
-            if( !can_field_divide(args[i], n)) 
+            if( !can_field_divide(arg[i], n)) 
                 return false;
         }
         return true;
@@ -77,14 +77,14 @@ class BaseField {
 
     void print_contents() const {
         for(int i = 0; i < key_bits; ++i) {
-            printf("%d", args[i]);
+            printf("%d", arg[i]);
         }
         printf("\n");
     }
 
     bool operator==( const BaseField<N, key_bits>& other ) const {
         for(int i = 0; i < key_bits; ++i) {
-            if(args[i] != other.args[i]) {
+            if(arg[i] != other.arg[i]) {
                 return false;
             }
         }
@@ -93,7 +93,7 @@ class BaseField {
 
     bool operator<( const BaseField<N, key_bits>& other ) const {
         for(int i = 0; i < key_bits; ++i) {
-            if(args[i] < other.args[i]) {
+            if(arg[i] < other.arg[i]) {
                 return true;
             }
         }
@@ -115,7 +115,7 @@ class BaseField {
 template<int N, typename key_type, int key_bits = 8*sizeof(key_type)>
 class Field : public BaseField<N, key_bits> {
   public: 
-    using BaseField<N, key_bits>::args;
+    using BaseField<N, key_bits>::arg;
     using BaseField<N, key_bits>::field_add;
 
     void add( const key_type& key) {
@@ -124,7 +124,7 @@ class Field : public BaseField<N, key_bits> {
 
     void add( const Field<N, key_type, key_bits> field_elt) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], field_elt.args[i]);
+            arg[i] = field_add(arg[i], field_elt.arg[i]);
         }
     }
 
@@ -134,13 +134,13 @@ class Field : public BaseField<N, key_bits> {
 
     void remove( const Field<N, key_type, key_bits> field_elt) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], (-1)*field_elt.args[i]);
+            arg[i] = field_add(arg[i], (-1)*field_elt.arg[i]);
         }
     }
 
     void add_n_times( const key_type& key, int n) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], n*bit_is_set(key, i) );
+            arg[i] = field_add(arg[i], n*bit_is_set(key, i) );
         }
     }
 
@@ -159,7 +159,7 @@ class Field : public BaseField<N, key_bits> {
     }
 
     inline void copy_bit( key_type& key, int i) {
-        uint64_t x = (args[i] != 0);
+        uint64_t x = (arg[i] != 0);
         key |= (x << i);
     }
 };
@@ -167,7 +167,7 @@ class Field : public BaseField<N, key_bits> {
 template <int N, int key_bits>
 class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
   public:
-    using BaseField<N, key_bits>::args;
+    using BaseField<N, key_bits>::arg;
     using BaseField<N, key_bits>::field_add;
     void add( const std::string& key) {
         add_n_times(key.c_str(), 1);
@@ -175,7 +175,7 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
     
     void add( const Field<N, std::string, key_bits> field_elt) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], field_elt.args[i]);
+            arg[i] = field_add(arg[i], field_elt.arg[i]);
         }
     }
 
@@ -185,13 +185,13 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
 
     void remove( const Field<N, std::string, key_bits> field_elt) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], (-1)*field_elt.args[i]);
+            arg[i] = field_add(arg[i], (-1)*field_elt.arg[i]);
         }
     }
 
     void add_n_times( const char* key, int n) {
         for(int i = 0; i < key_bits; ++i) {
-            args[i] = field_add(args[i], n*bit_is_set(key, i) );
+            arg[i] = field_add(arg[i], n*bit_is_set(key, i) );
         }
     }
 
@@ -202,7 +202,7 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
     //sets the ith bit of the key to 1 if the ith nit of our field is nonzero
     //sets it to 0 otherwise
     inline void copy_bit(char* key, int i) {
-        ((uint8_t*) key)[i/8] |= ((args[i] != 0) << (i % 8));
+        ((uint8_t*) key)[i/8] |= ((arg[i] != 0) << (i % 8));
     }
 
     void extract_key( std::string& key) {
@@ -214,4 +214,126 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
     }
 };
 
-#endif
+template<typename key_type, int key_bits>
+class Field<2, key_type, key_bits> {
+  public:
+    uint64_t arg = 0;
+
+    Field() {
+        assert( key_bits <= sizeof(uint64_t)*8);
+    }
+
+    void add( const key_type& key ) {
+        arg ^= key;
+    }
+
+    void add( const Field<2, key_type, key_bits> field_elt ) {
+        arg ^= field_elt.arg;
+    }
+
+    void remove(const key_type& key) {
+        add(key);
+    }
+
+    void remove( const Field<2, key_type, key_bits> field_elt ) {
+        add(field_elt);
+    }
+
+    void extract_key( key_type& key) {
+        key = (key_type) arg;
+    }
+
+    bool can_divide_by(int n) {
+        return true;
+    }
+
+    void print_contents() const {
+        printf("%lu\n", arg);
+    }
+
+    bool operator==( const Field<2, key_type, key_bits>& other ) const {
+        return arg == other.arg;
+    }
+
+    bool operator<( const Field<2, key_type, key_bits>& other ) const {
+        return arg < other.arg;
+    }
+};
+
+template<int key_bits>
+class Field<2, std::string, key_bits> {
+  public:
+    uint32_t arg[key_bits/32] = {};
+
+    Field() {}
+
+    void add( const std::string& key ) {
+        for(int i = 0; i < key_bits/8; ++i) {
+            arg[i/4] ^= field_add(key[i], i % 4);
+        }
+    }
+
+    void add( const Field<2, std::string, key_bits> field_elt ) {
+        for(int i = 0; i < key_bits/32; ++i) {
+            arg[i] ^= field_elt.arg[i];
+        }
+    }
+
+    void remove( const std::string& key) {
+        add(key);
+    }
+
+    void remove( const Field<2, std::string, key_bits> field_elt ) {
+        add(field_elt);
+    }
+
+    void extract_key( std::string& key) {
+        char buf[key_bits/8] = {};
+        for(int i = 0; i < key_bits/8; ++i) {
+            copy_char(buf, i);
+        }
+        key.assign(buf);
+    }
+
+    bool can_divide_by(int n) {
+        return true;
+    }
+
+    void print_contents() const {
+        for(int i = 0; i < key_bits/32; ++i) {
+            for(int j = 0; j < 32; ++j) {
+                printf("%d", (arg[i] & (1 << j)) != 0);
+            }
+        }
+        printf("\n");
+    }
+
+    inline uint32_t field_add(char c, int pos) {
+        //printf("Char %c, pos %d, added %d", c, pos, c << (pos*8));
+        return( c << (pos*8) );
+    }
+
+    inline void copy_char(char* key, int i) {
+        key[i] = (arg[i/4] >> ((i%4)*8) ) & 0xFF;
+    }
+
+    bool operator==( const Field<2, std::string, key_bits>& other ) const {
+        for(int i = 0; i < key_bits/32; ++i) {
+            if(arg[i] != other.arg[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator<( const Field<2, std::string, key_bits>& other ) const {
+        for(int i = 0; i < key_bits/32; ++i) {
+            if(arg[i] < other.arg[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+#endif 

@@ -25,7 +25,7 @@ template <typename key_type, int key_bits = 8*sizeof(key_type)>
 void testAdd(int seed, int num_hashfns, int num_buckets, 
 			 int num_shared_keys, int num_distinct_keys) {
 	srand(seed);
-	const int n_parties = 3;
+	const int n_parties = 2;
 	typedef multiIBLT<n_parties, key_type, key_bits> iblt_type;
 	typedef keyGenerator<key_type, key_bits> gen_type;
 	keyHandler<key_type, gen_type> keyhand;
