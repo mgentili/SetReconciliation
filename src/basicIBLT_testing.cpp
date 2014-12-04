@@ -68,7 +68,7 @@ void testXOR(int seed, int num_hashfns, int num_buckets,
 	if( !res1 )
 		printf("Failed to peel\n");
 	else {
-		set_union(indiv_keys, distinct_keys);
+		keyhand.set_union(indiv_keys, distinct_keys);
 		checkResults<key_type>(peeled_keys, distinct_keys);
 		printf("Successfully peeled\n");
 	}

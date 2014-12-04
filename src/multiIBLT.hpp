@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <set>
 #include <unordered_set>
+#include <bitset>
 #include "tabulation_hashing.hpp"
 #include "basicField.hpp"
 
@@ -21,7 +22,6 @@ class multiIBLT_bucket {
 	Field<n_parties, key_type, key_bits> key_sum;
 	Field<n_parties, hash_type, 8*sizeof(hash_type)> hash_sum;
 	SimpleField<n_parties> count;
-
 	multiIBLT_bucket(): key_sum(), hash_sum(), count() {}
 
 	void add(const key_type& k, const hash_type& h) {

@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <assert.h>
 #include <map>
+#include <unordered_map>
 #include <random>
 #include <iostream>
 
@@ -35,21 +36,6 @@ void checkResults(std::unordered_set<key_type>& expected, std::unordered_set<key
 	for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
 		assert( actual.find(*it1) != actual.end() );
 	}
-}
-
-template <typename key_type>
-void set_union(std::vector<std::unordered_set<key_type> >& key_sets, std::unordered_set<key_type>& final_set) {
-	for(auto it1 = key_sets.begin(); it1 != key_sets.end(); ++it1) {
-		for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
-			final_set.insert(*it2);
-		}
-	}
-}
-
-template <typename key_type>
-void set_difference(std::vector<std::unordered_set<key_type> >& key_sets, std::unordered_set<key_type>& final_set) {
-	std::map<key_type, int> key_counts;
-
 }
 
 template <typename key_type, int key_bits = 8*sizeof(key_type)>
@@ -132,6 +118,62 @@ class keyHandler {
 		std::unordered_set<key_type> all_keys;
 		generate_distinct_keys(num_shared_keys + key_sets.size()*num_distinct_keys, all_keys);
 		insert_sample_keys(num_shared_keys, num_distinct_keys, all_keys, shared_keys, key_sets);
+	}
+
+	void assign_keys(int insert_prob, int n_parties, std::unordered_set<key_type>& all_keys, 
+					 std::unordered_map<key_type, std::vector<int> >& key_assignments) {
+		for(auto it = all_keys.begin(); it != all_keys.end(); ++it) {
+			std::vector<int> assignments;
+			for(int i = 0; i < n_parties; ++i) {
+				if((rand() % 100) < insert_prob) {
+					assignments.push_back(i);
+				}
+			}
+			key_assignments[*it] = assignments;
+		}
+	}
+
+	void assign_keys(int insert_prob, int n_parties, int num_keys, 
+					 std::unordered_map<key_type, std::vector<int> >& key_assignments) {
+		std::unordered_set<key_type> all_keys;
+		generate_distinct_keys(num_keys, all_keys);
+		assign_keys( insert_prob, n_parties, all_keys, key_assignments);
+	}
+
+	void set_union(std::vector<std::unordered_set<key_type> >& key_sets, std::unordered_set<key_type>& final_set) {
+		for(auto it1 = key_sets.begin(); it1 != key_sets.end(); ++it1) {
+			for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
+				final_set.insert(*it2);
+			}
+		}
+	}
+
+	void set_counts(std::vector<std::unordered_set<key_type> >& key_sets,
+					std::unordered_map<key_type, int>& counts) {
+		for(auto it1 = key_sets.begin(); it1 != key_sets.end(); ++it1) {
+			for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
+				if( counts.find(*it1) == counts.end() ) {
+					counts[*it1] = 1;
+				} else {
+					counts[*it1]++;
+				}
+			}
+		}
+	}
+
+	void set_counts(std::unordered_map<key_type, std::vector<int> >& key_assignments,
+					std::unordered_map<key_type, int>& counts) {
+		for(auto it = key_assignments.begin(); it != key_assignments.end(); ++it) {
+			counts[it->first] = (it->second).size();
+		}
+	}
+
+	void set_difference(size_t n_parties, std::unordered_map<key_type, std::vector<int> >& key_assignments,
+						std::unordered_set<key_type>& keys) {
+		for(auto it = key_assignments.begin(); it != key_assignments.end(); ++it) {
+			if((it->second.size()) > 0 && (it->second.size() < n_parties))
+				keys.insert(it->first);
+		}
 	}
 };
 
