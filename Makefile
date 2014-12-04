@@ -2,19 +2,20 @@ CXX=g++
 RM=-rm -f
 CPPFLAGS=-std=c++11 -Wall
 LDFLAGS=
-
-BASIC_IBLT_SRCS=src/basicIBLT_testing.cpp
-MULTI_IBLT_SRCS=src/multiIBLT_testing.cpp
-TABULATION_SRCS=src/tabulation_testing.cpp
-BASIC_FIELD_SRCS=src/field_testing.cpp
-SRCS=$(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS)
+BASIC_IBLT_SRCS=basicIBLT_testing.cpp
+MULTI_IBLT_SRCS=multiIBLT_testing.cpp
+TABULATION_SRCS=tabulation_testing.cpp
+BASIC_FIELD_SRCS=field_testing.cpp
+FINGERPRINT_SRCS=fingerprint_testing.cpp
+SRCS=$(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS)
+OBJS=$(SRCS:src/%.cpp=obj/%.o)
 
 BASIC_IBLT=bin/basic_testing
 MULTI_IBLT=bin/multi_testing
 TABULATION=bin/tabulation_testing
 BASIC_FIELD=bin/field_testing
-
-PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD)
+FINGERPRINT=bin/fingerprint_testing
+PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT)
 
 default: all
 all: $(PROGRAMS)
@@ -23,34 +24,48 @@ tabulation: $(TABULATION)
 basic_iblt: $(BASIC_IBLT)
 multi_iblt: $(MULTI_IBLT)
 field: $(BASIC_FIELD)
+fingerprint: $(FINGERPRINT)
 
-%.o: %.cpp
-	$(CXX) $(CPPFLAGS) -c $< -o $@
+# %.o: %.cpp
+# 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
-$(BASIC_IBLT): $(BASIC_IBLT_SRCS:.cpp=.o)
+DEPS=$(OBJS:%.o=%.d)
+
+obj/%.o: src/%.cpp
+	$(CXX) $(CPPFLAGS) -c -MMD -MP $< -o $@
+
+$(BASIC_IBLT): $(BASIC_IBLT_SRCS:%.cpp=obj/%.o)
 	$(CXX) $(LDFLAGS) $< -o $@
 
-$(MULTI_IBLT): $(MULTI_IBLT_SRCS:.cpp=.o)
+$(MULTI_IBLT): $(MULTI_IBLT_SRCS:%.cpp=obj/%.o)
 	$(CXX) $(LDFLAGS) $< -o $@
 
-$(TABULATION): $(TABULATION_SRCS:.cpp=.o)
+$(TABULATION): $(TABULATION_SRCS:%.cpp=obj/%.o)
 	$(CXX) $(LDFLAGS) $< -o $@
 
-$(BASIC_FIELD): $(BASIC_FIELD_SRCS:.cpp=.o)
+$(BASIC_FIELD): $(BASIC_FIELD_SRCS:%.cpp=obj/%.o)
+	$(CXX) $(LDFLAGS) $< -o $@
+
+$(FINGERPRINT): $(FINGERPRINT_SRCS:%.cpp=obj/%.o)
 	$(CXX) $(LDFLAGS) $< -o $@
 
 clean:
-	$(RM) src/*.o
-	$(RM) $(PROGRAMS)
+	$(RM) $(OBJS) $(PROGRAMS) $(DEPS)
 
-#AUTO-GENERATE HEADER DEPENDENCIES
-depend: .depend
+-include $(DEPS)
 
-.depend: $(SRCS)
-	rm -f ./.depend
-	$(CXX) $(CPPFLAGS) -MM $^ > ./.depend;
+# clean:
+# 	$(RM) $(OBJS) $(PROGRAMS)
+# 	$(RM) $(PROGRAMS)
 
-include .depend
+# #AUTO-GENERATE HEADER DEPENDENCIES
+# depend: .depend
+
+# .depend: $(SRCS)
+# 	rm -f ./.depend
+# 	$(CXX) $(CPPFLAGS) -MM $^ > ./.depend;
+
+# include .depend
 
 # # The final executable
 # TARGET := something
