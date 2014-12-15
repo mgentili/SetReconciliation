@@ -28,7 +28,10 @@ class IBLT_tester {
 		}
 	}
 
-	void random_testing(int insert_prob) {
+	/** inserts each key with insert_prob into each IBLT, then ensures that all keys
+	 ** that aren't in all IBLTs are peeled properly and appropriates the keys accordingly
+	 **/
+	void random_testing(double insert_prob) {
 		keyhand.assign_keys(insert_prob, n_parties, num_keys, key_assignments);
 
 		//insert keys
@@ -37,23 +40,22 @@ class IBLT_tester {
 				iblts[*it2]->insert_key(it1->first);
 			}
 		}
-
 		check_results();
-
 	}
-	
+
 	void check_results() {
 		//add all iblts
 		for( uint i = 0; i < iblts.size(); ++i) {
-			resIBLT.add(*iblts[i]);
+			resIBLT.add(*iblts[i], i);
 		}
-
+		
 		//get keys that aren't in all IBLTs
-		std::unordered_set<key_type> distinct_keys;
+		std::unordered_map<key_type, std::vector<int> > distinct_keys;
 		keyhand.set_difference(n_parties, key_assignments, distinct_keys);
 
-		std::unordered_set<key_type> peeled_keys;
+		std::unordered_map<key_type, std::vector<int> > peeled_keys;
 		bool res1 = resIBLT.peel(peeled_keys);
+		std::cout << "Distinct keys size: " << distinct_keys.size() << " Peeled keys size: " << peeled_keys.size() << std::endl;
 
 		if( !res1 )
 			printf("Failed to peel\n");
@@ -75,54 +77,6 @@ class IBLT_tester {
   	std::unordered_map<key_type, std::vector<int> > key_assignments;
 };
 
-template <typename key_type, int key_bits = 8*sizeof(key_type)>
-void randomizedTesting(int num_hashfns, int num_buckets, int insert_prob) {
-	const int n_parties = 10;
-	const int num_keys = 1000;
-	typedef multiIBLT<n_parties, key_type, key_bits> iblt_type; 
-	typedef keyGenerator<key_type, key_bits> gen_type;
-	std::unordered_set<key_type> all_keys;
-	keyHandler<key_type, gen_type> keyhand;
-	std::vector<iblt_type* > iblts(n_parties);
-	for(int i = 0 ; i < n_parties; ++i) {
-		iblts[i] = new multiIBLT<n_parties, key_type>(num_buckets, num_hashfns);
-	}
-
-	keyhand.generate_distinct_keys(num_keys, all_keys);
-	std::unordered_map<key_type, std::vector<int> > key_assignments;
-	keyhand.assign_keys(insert_prob, n_parties, all_keys, key_assignments);
-
-	for(auto it1 = key_assignments.begin(); it1 != key_assignments.end(); ++it1) {
-		for(auto it2 = (it1->second).begin(); it2 != (it1->second).end(); ++it2) {
-			iblts[*it2]->insert_key(it1->first);
-		}
-	}
-
-	std::unordered_set<key_type> distinct_keys;
-	keyhand.set_difference(n_parties, key_assignments, distinct_keys);
-
-	iblt_type resIBLT(num_buckets, num_hashfns);
-	for( uint i = 0; i < iblts.size(); ++i) {
-		resIBLT.add(*iblts[i]);
-	}
-	
-	//IBLT_DEBUG("Printing contents of Result IBLT before peeling" << std::endl);
-	//resIBLT.print_contents();
-	std::unordered_set<key_type> peeled_keys;
-	bool res1 = resIBLT.peel(peeled_keys);
-
-	if( !res1 )
-		printf("Failed to peel\n");
-	else {
-		checkResults<key_type>(distinct_keys, peeled_keys);
-		printf("Successfully peeled\n");
-	}
-	printf("%d parties, %d slots per IBLT, %lu keys in result IBLT\n", 
-			n_parties, num_buckets, peeled_keys.size());
-	for(uint i = 0; i < iblts.size(); ++i) {
-		delete iblts[i];
-	}
-}
 
 template <typename key_type, int key_bits = 8*sizeof(key_type)>
 void testAdd(int seed, int num_hashfns, int num_buckets, 
@@ -205,7 +159,7 @@ void simulateIBLT(int num_buckets, int num_hashfns, int num_trials, double pctsh
 
 int main() {
 	int num_buckets = 1 << 15;
-	int num_trials = 1;
+	int num_trials = 10;
 	int num_hashfns = 4;
 	//int seed = 0;
 	int insert_prob = 50;
@@ -215,7 +169,10 @@ int main() {
 	//simulateIBLT<std::string, 64>(num_buckets, num_hashfns, num_trials, pctshared);
 	//testAdd<uint64_t>(seed, num_hashfns, num_buckets, num_shared_keys, num_distinct_keys);
 	//randomizedTesting<std::string, 64>(num_hashfns, num_buckets, insert_prob);
-    const int num_keys = 10000;
-    IBLT_tester<3, std::string, 64> tester(num_keys, num_buckets, num_hashfns);
-    tester.random_testing(insert_prob);
+    const int num_keys = 40000;
+    for(int i = 1; i < num_trials; ++i) {
+	    IBLT_tester<3, std::string, 64> tester(num_keys, num_buckets, num_hashfns);
+	    double insert_prob = i/((double) num_trials);
+    	tester.random_testing(insert_prob);
+    }
 }

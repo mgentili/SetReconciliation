@@ -13,7 +13,7 @@ class SimpleField {
 
     void add( int x) {
         arg = ((arg + x) % N + N) % N;
-    }
+    }   
 
     void add( const SimpleField<N> field_elt ) {
         add(field_elt.get_contents());

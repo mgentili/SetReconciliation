@@ -38,6 +38,31 @@ void checkResults(std::unordered_set<key_type>& expected, std::unordered_set<key
 	}
 }
 
+/**  checkResults asserts that two sets contain the same information**/
+template <typename key_type>
+void checkResults(std::unordered_map<key_type, std::vector<int> >& expected, 
+				  std::unordered_map<key_type, std::vector<int> >& actual) {
+	if( expected.size() != actual.size() ) {
+		printf("Expected: %zu, Actual: %zu\n", expected.size(), actual.size());
+		return;
+	}
+	// for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
+	// 	std::cout << "Expected got" << *it1 << std::endl;
+	// }
+
+	// for(auto it1 = actual.begin(); it1 != actual.end(); ++it1 ) {
+	// 	std::cout << "Actual got" << *it1 << std::endl;
+	// }
+
+	for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
+		// for(int i = 0; i < it1->second.size(); ++i) {
+		// 	printf("%dvs%d,", it1->second[i], actual[it1->first][i]);
+		// }
+		// printf("\n");
+		assert( actual[it1->first] == it1->second );
+	}
+}
+
 template <typename key_type, int key_bits = 8*sizeof(key_type)>
 class keyGenerator {
   public:
@@ -82,7 +107,7 @@ template <int key_bits>
 const std::string keyGenerator<std::string, key_bits>::alphanumeric = 
 		"abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "0123456789";
+        "0123456789 ";
 
 template <typename key_type, typename generator = keyGenerator<key_type, sizeof(key_type)> >
 class keyHandler {
@@ -120,12 +145,15 @@ class keyHandler {
 		insert_sample_keys(num_shared_keys, num_distinct_keys, all_keys, shared_keys, key_sets);
 	}
 
-	void assign_keys(int insert_prob, int n_parties, std::unordered_set<key_type>& all_keys, 
+	void assign_keys(double insert_prob, int n_parties, std::unordered_set<key_type>& all_keys, 
 					 std::unordered_map<key_type, std::vector<int> >& key_assignments) {
+		std::random_device rd;
+	    std::mt19937 gen(rd());
+	    std::uniform_real_distribution<> dis(0, 1);
 		for(auto it = all_keys.begin(); it != all_keys.end(); ++it) {
 			std::vector<int> assignments;
 			for(int i = 0; i < n_parties; ++i) {
-				if((rand() % 100) < insert_prob) {
+				if( dis(gen) < insert_prob) {
 					assignments.push_back(i);
 				}
 			}
@@ -133,7 +161,7 @@ class keyHandler {
 		}
 	}
 
-	void assign_keys(int insert_prob, int n_parties, int num_keys, 
+	void assign_keys(double insert_prob, int n_parties, int num_keys, 
 					 std::unordered_map<key_type, std::vector<int> >& key_assignments) {
 		std::unordered_set<key_type> all_keys;
 		generate_distinct_keys(num_keys, all_keys);
@@ -144,6 +172,22 @@ class keyHandler {
 		for(auto it1 = key_sets.begin(); it1 != key_sets.end(); ++it1) {
 			for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
 				final_set.insert(*it2);
+			}
+		}
+	}
+
+	void set_union(std::unordered_set<key_type>& key1, std::unordered_set<key_type>& key2, std::unordered_set<key_type>& final_set) {
+		for(auto it = key1.begin(); it != key1.end(); ++it) {
+			final_set.insert(*it);
+		}
+		for(auto it = key2.begin(); it != key2.end(); ++it) {
+			final_set.insert(*it);
+		}
+	}
+	void set_intersection(std::unordered_set<key_type>& key1, std::unordered_set<key_type>& key2, std::unordered_set<key_type>& intersection) {
+		for(auto it1 = key1.begin(); it1 != key1.end(); ++it1) {
+			if( key2.find(*it1) != key2.end() ) {
+				intersection.insert(*it1);
 			}
 		}
 	}
@@ -175,6 +219,15 @@ class keyHandler {
 				keys.insert(it->first);
 		}
 	}
+
+	void set_difference(size_t n_parties, std::unordered_map<key_type, std::vector<int> >& key_assignments,
+						std::unordered_map<key_type, std::vector<int> >& keys) {
+		for(auto it = key_assignments.begin(); it != key_assignments.end(); ++it) {
+			if((it->second.size()) > 0 && (it->second.size() < n_parties)) {
+				keys[it->first] = it->second;
+			} 
+		}
+	}	
 };
 
 #endif
