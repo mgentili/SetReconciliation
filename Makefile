@@ -8,7 +8,7 @@ TABULATION_SRCS=tabulation_testing.cpp
 BASIC_FIELD_SRCS=field_testing.cpp
 FINGERPRINT_SRCS=fingerprint_testing.cpp
 SRCS=$(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS)
-OBJS=$(SRCS:src/%.cpp=obj/%.o)
+OBJS=$(SRCS:%.cpp=obj/%.o)
 
 BASIC_IBLT=bin/basic_testing
 MULTI_IBLT=bin/multi_testing
@@ -19,20 +19,21 @@ PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT)
 
 default: all
 all: $(PROGRAMS)
-
 tabulation: $(TABULATION)
 basic_iblt: $(BASIC_IBLT)
 multi_iblt: $(MULTI_IBLT)
 field: $(BASIC_FIELD)
 fingerprint: $(FINGERPRINT)
-
-# %.o: %.cpp
-# 	$(CXX) $(CPPFLAGS) -c $< -o $@
+#lala:
+#	@echo $(DEPS)
 
 DEPS=$(OBJS:%.o=%.d)
 
 obj/%.o: src/%.cpp
 	$(CXX) $(CPPFLAGS) -c -MMD -MP $< -o $@
+
+#obj/%.d: src/%.cpp
+#	$(CC) $(CFLAGS) -M -MF $@ -MT $(@:%.d=%.o) $<
 
 $(BASIC_IBLT): $(BASIC_IBLT_SRCS:%.cpp=obj/%.o)
 	$(CXX) $(LDFLAGS) $< -o $@
@@ -52,7 +53,7 @@ $(FINGERPRINT): $(FINGERPRINT_SRCS:%.cpp=obj/%.o)
 clean:
 	$(RM) $(OBJS) $(PROGRAMS) $(DEPS)
 
--include $(DEPS)
+include $(DEPS)
 
 # clean:
 # 	$(RM) $(OBJS) $(PROGRAMS)
