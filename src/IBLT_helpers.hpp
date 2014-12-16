@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <random>
 #include <iostream>
+#include <sys/stat.h>
 
 #define DEBUG 1
 
@@ -25,13 +26,6 @@ void checkResults(std::unordered_set<key_type>& expected, std::unordered_set<key
 		printf("Expected: %zu, Actual: %zu\n", expected.size(), actual.size());
 		return;
 	}
-	// for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
-	// 	std::cout << "Expected got" << *it1 << std::endl;
-	// }
-
-	// for(auto it1 = actual.begin(); it1 != actual.end(); ++it1 ) {
-	// 	std::cout << "Actual got" << *it1 << std::endl;
-	// }
 
 	for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
 		assert( actual.find(*it1) != actual.end() );
@@ -46,21 +40,26 @@ void checkResults(std::unordered_map<key_type, std::vector<int> >& expected,
 		printf("Expected: %zu, Actual: %zu\n", expected.size(), actual.size());
 		return;
 	}
-	// for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
-	// 	std::cout << "Expected got" << *it1 << std::endl;
-	// }
-
-	// for(auto it1 = actual.begin(); it1 != actual.end(); ++it1 ) {
-	// 	std::cout << "Actual got" << *it1 << std::endl;
-	// }
 
 	for(auto it1 = expected.begin(); it1 != expected.end(); ++it1 ) {
-		// for(int i = 0; i < it1->second.size(); ++i) {
-		// 	printf("%dvs%d,", it1->second[i], actual[it1->first][i]);
-		// }
-		// printf("\n");
 		assert( actual[it1->first] == it1->second );
 	}
+}
+
+size_t load_buffer_with_file(const char* filename, char** buf) {
+	FILE* fp = fopen(filename, "r");
+	if( !fp ) {
+		std::cerr << "Unable to open file" << std::endl;
+		exit(1);
+	}
+
+	struct stat st;
+	stat(filename, &st);
+	size_t size = st.st_size;
+	*buf = new char[size];
+	fread(*buf, 1, size, fp);
+	fclose(fp);
+	return size;
 }
 
 template <typename key_type, int key_bits = 8*sizeof(key_type)>
@@ -108,6 +107,41 @@ const std::string keyGenerator<std::string, key_bits>::alphanumeric =
 		"abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "0123456789 ";
+
+// generate_random_file creates a file with len alphanumeric characters
+void generate_random_file(const char* filename, size_t len) {
+	FILE* fp = fopen(filename, "w");
+	if( !fp ) {
+		std::cout << "failed to open file" << std::endl;
+		exit(1);
+	}
+	keyGenerator<std::string, 8> kg; 
+	for(size_t i = 0; i < len; ++i) {
+		fputc(kg.generate_key()[0], fp);
+	}
+	fclose(fp);
+}
+
+// generate_similar_file creates a file that has on average pct_similarity characters the same 
+// and in the same order as the old_file
+void generate_similar_file(const char* old_file, const char* new_file, double pct_similarity) {
+	FILE* fp1 = fopen(old_file, "r");
+	FILE* fp2 = fopen(new_file, "w");
+	size_t sim = (size_t) (pct_similarity * 100000);
+	keyGenerator<uint64_t> kg;
+	if( !fp1 || !fp2 ) {
+		std::cout << "failed to open file" << std::endl;
+		exit(1);
+	}
+	int c;
+	while((c = fgetc(fp1)) != EOF) {
+		if( (kg.generate_key() % 100000) < sim) {
+			fputc(c, fp2);
+		}
+	}
+	fclose(fp1);
+	fclose(fp2);
+}
 
 template <typename key_type, typename generator = keyGenerator<key_type, sizeof(key_type)> >
 class keyHandler {
