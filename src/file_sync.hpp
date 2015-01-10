@@ -21,24 +21,22 @@ class FileSynchronizer {
 	  public:
 	  	typedef multiIBLT<n_parties, hash_type> iblt_type;
 	  	std::vector<pair<hash_type, size_t> > hashes; //hash and length
-	  	std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen; //these don't actually need to be transferred, since can be reconstructed from hashes
+	  	std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen; //mapping from hash to position in file and length
 	  	iblt_type* iblt;
 
 	  	Round1Info() {};
 	};
 
-	class Round2Info {
+	class Round2Info { //info to update A to have the same file as B
 	  public:
-		std::vector<bool> chunk_exists;  //for each chunk server has, whether client has
-		std::vector<bool> hash_exists; //for each hash client has, whether server has
-		std::vector<std::string> new_chunk_info; //length and contents of each chunk that client doesn't have
-		std::vector<size_t> existing_chunk_encoding; //index of chunk hash within hash_exists
+		std::vector<bool> chunk_exists;  //for each chunk B has, whether A has
+		std::vector<std::string> new_chunk_info; //length and contents of each chunk that A doesn't have
+		std::vector<size_t> existing_chunk_encoding; //index of chunk hash within client's 
 		Round2Info() {};
 
 		size_t size_in_bits() { // in bits
 			size_t tot_bits = 0;
 			tot_bits += chunk_exists.size();
-			tot_bits += hash_exists.size();
 			for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
 				tot_bits += it->size()*8;
 			}
@@ -49,10 +47,6 @@ class FileSynchronizer {
 		void serialize(file_sync::Round2& rd2) {
 			for(auto it = chunk_exists.begin(); it != chunk_exists.end(); ++it) {
 				rd2.add_chunk_exists(*it);
-			}
-
-			for(auto it = hash_exists.begin(); it != hash_exists.end(); ++it) {
-				rd2.add_hash_exists(*it);
 			}
 
 			for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
@@ -67,10 +61,6 @@ class FileSynchronizer {
 		void deserialize(file_sync::Round2& rd2) {
 			for(int i = 0; i < rd2.chunk_exists_size(); ++i) {
 				chunk_exists.push_back(rd2.chunk_exists(i));
-			}
-
-			for(int i = 0; i < rd2.hash_exists_size(); ++i) {
-				hash_exists.push_back(rd2.hash_exists(i));
 			}
 
 			for(int i = 0; i < rd2.new_chunk_info_size(); ++i) {
@@ -93,14 +83,14 @@ class FileSynchronizer {
 		size_t curr_pos = 0;
   		for(auto it = my_rd1.hashes.begin(); it != my_rd1.hashes.end(); ++it) {
   			if( my_rd1.hashes_to_poslen.find(it->first) != my_rd1.hashes_to_poslen.end() ) {
-  				std::cout << "Already have hash " << it->first << " pos " << curr_pos << " len" << it->second << std::endl;
+  				IBLT_DEBUG("Already have hash " << it->first << " pos " << curr_pos << " len" << it->second << std::endl);
   			}
   			my_rd1.hashes_to_poslen[it->first] = make_pair(curr_pos, it->second);
   			std::cout << "File" << filename << " Hash " << it->first << " pos " << curr_pos << " len" << it->second << std::endl;
 			curr_pos += it->second;
   		}
   		std::cout << "File " << filename << " has " << my_rd1.hashes.size() << "hashes" << ". hashes_to_pos_len has size" << my_rd1.hashes_to_poslen.size() << std::endl;
-  	
+  	 
   		my_rd1.iblt = new iblt_type(num_buckets, num_hashfns);
 		for(auto it = my_rd1.hashes_to_poslen.begin(); it != my_rd1.hashes_to_poslen.end(); ++it) {
 			my_rd1.iblt->insert_key(it->first);

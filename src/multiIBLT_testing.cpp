@@ -40,7 +40,34 @@ class IBLT_tester {
 				iblts[*it2]->insert_key(it1->first);
 			}
 		}
-		check_results();
+		if( n_parties == 2) {
+			check_results_simple(); //using current method, two party cannot determine allocation
+		} else {
+			check_results();
+		}
+	}
+
+	void check_results_simple() {
+		for( uint i = 0; i < iblts.size(); ++i) {
+			resIBLT.add(*iblts[i], i);
+		}
+		
+		//get keys that aren't in all IBLTs
+		std::unordered_set<key_type> distinct_keys;
+		keyhand.set_difference(n_parties, key_assignments, distinct_keys);
+
+		std::unordered_set<key_type> peeled_keys;
+		bool res1 = resIBLT.peel(peeled_keys);
+		std::cout << "Distinct keys size: " << distinct_keys.size() << " Peeled keys size: " << peeled_keys.size() << std::endl;
+
+		if( !res1 )
+			printf("Failed to peel\n");
+		else {
+			checkResults<key_type>(distinct_keys, peeled_keys);
+			printf("Successfully peeled\n");
+		}
+		printf("%d parties, %d slots per IBLT, %lu keys in result IBLT\n", 
+				n_parties, num_buckets, peeled_keys.size());
 	}
 
 	void check_results() {
@@ -157,22 +184,34 @@ void simulateIBLT(int num_buckets, int num_hashfns, int num_trials, double pctsh
 	}
 }
 
-int main() {
-	int num_buckets = 1 << 15;
-	int num_trials = 10;
-	int num_hashfns = 4;
-	//int seed = 0;
-	int insert_prob = 50;
-	//int num_shared_keys = 1;
-	//int num_distinct_keys = 0;
-	//simulateIBLT<uint64_t>(num_buckets, num_hashfns, num_trials, pctshared);
-	//simulateIBLT<std::string, 64>(num_buckets, num_hashfns, num_trials, pctshared);
-	//testAdd<uint64_t>(seed, num_hashfns, num_buckets, num_shared_keys, num_distinct_keys);
-	//randomizedTesting<std::string, 64>(num_hashfns, num_buckets, insert_prob);
-    const int num_keys = 40000;
-    for(int i = 1; i < num_trials; ++i) {
-	    IBLT_tester<3, std::string, 64> tester(num_keys, num_buckets, num_hashfns);
+template <typename key_type = uint64_t, int key_bits = 8*sizeof(key_type)>
+void simulateTwoParty() {
+	const int num_buckets = 1 << 20;
+	const int num_trials = 10;
+	const int num_hashfns = 4;
+	const int num_keys = 1000000;
+	for(int i = 1; i < num_trials; ++i) {
+	    IBLT_tester<2, key_type, key_bits> tester(num_keys, num_buckets, num_hashfns);
 	    double insert_prob = i/((double) num_trials);
     	tester.random_testing(insert_prob);
     }
+} 
+
+template <typename key_type = uint64_t, int key_bits = 8*sizeof(key_type)>
+void simulateThreeParty() {
+	const int num_buckets = 1 << 15;
+	const int num_trials = 10;
+	const int num_hashfns = 4;
+	const int num_keys = 40000;
+	for(int i = 1; i < num_trials; ++i) {
+	    IBLT_tester<3, key_type, key_bits> tester(num_keys, num_buckets, num_hashfns);
+	    double insert_prob = i/((double) num_trials);
+    	tester.random_testing(insert_prob);
+    }
+} 
+
+int main() {
+	simulateTwoParty<uint32_t>();
+	//simulateThreeParty<uint32_t>();
+	//simulateThreeParty<std::string, 64>();
 }

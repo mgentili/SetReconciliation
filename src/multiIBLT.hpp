@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include "tabulation_hashing.hpp"
 #include "basicField.hpp"
-
+#include "MurmurHash2.hpp"
 //structure of a bucket within an IBLT
 template <size_t n_parties = 2, typename key_type = uint64_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint64_t>
 class multiIBLT_bucket {
@@ -90,7 +90,7 @@ class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, ke
 		has_key ^= counterparty_bucket.has_key;
 	}
 
-	// add a bucket corresponding to a specific index
+	// add a bucket corresponding to a specific index.
 	// that bucket should only have that index bit potentially set
 	void add(const this_bucket_type& counterparty_bucket, size_t index) {
 		parent_bucket_type::add(counterparty_bucket);
@@ -138,6 +138,7 @@ template <size_t n_parties = 2,
 	// typename bucket_type = multiIBLT_bucket<n_parties, key_type, key_bits, hash_type>,
 	typename bucket_type = multiIBLT_bucket_extended<n_parties, key_type, key_bits, hash_type>,
 	typename hasher = TabulationHashing<key_type, key_bits, hash_type> >
+	//typename hasher = MurmurHashing<key_type, key_bits, hash_type> >
 class multiIBLT {
   public:
   	typedef multiIBLT<n_parties, key_type, key_bits, hash_type, bucket_type, hasher> this_iblt_type;
@@ -227,20 +228,7 @@ class multiIBLT {
 					}
 					peeled_keys[peeled_key] = indices;
 					peel_key( curr_bucket, peelable_keys );
-				} else {
-					// std::cout << "Already peeled this key!" << peeled_key;
-					// std::vector<int> indices;
-					// for(size_t i = 0; i < n_parties; ++i) {
-					// 	if(curr_bucket.has_key[i]) {
-					// 		indices.push_back(i);
-					// 	}
-					// }
-					// assert(indices == peeled_keys[peeled_key]);
-				}
-				// else
-				// 	printf("Already peeled this key! %lu\n", peeled_key);
-				//std::cout << peeled_key << std::endl;
-				
+				} 
 			}
 
 			//either every bucket has one key or more, in which case we failed,
@@ -277,52 +265,63 @@ class multiIBLT {
 	// returns whether was able to find peelable key
 	// stores whether during search 
 	bool find_peelable_key(std::deque<bucket_type>& peelable_keys, bool& has_multiple_keys) {
+		bool peeled_key = false;
 		has_multiple_keys = false;
 		for(size_t i = 0; i < num_hashfns; ++i ) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
 				if( can_peel( subIBLTs[i][j] ) ) {
-					//subIBLTs[i][j].print_contents();
 					peelable_keys.emplace_back(subIBLTs[i][j]);
-					return true;
+					peeled_key = true;
 				}
 				if( subIBLTs[i][j].count.get_contents() != 0 )
 					has_multiple_keys = true;
 			}
 		}
-		return false;
+		return peeled_key;
 	}
 //Below should be private at some point
 	
-	//need to think about design decision. Use bucket type when really only need key and hash.
-	//only really need key, but for efficiency sake, want to keep hash along for the ride
 	void peel_key(bucket_type& peelable_bucket, std::deque<bucket_type>& peelable_keys) {
-		std::set<bucket_type> new_peelables;
 		size_t bucket_index;
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			key_type buf;
 			peelable_bucket.key_sum.extract_key(buf);
 			bucket_index = get_bucket_index(buf, i);
-			// printf("Before removing:\n");
-			// subIBLTs[i][bucket_index].print_contents();
 			subIBLTs[i][bucket_index].remove(peelable_bucket);
-			// printf("After removing:\n");
-			// subIBLTs[i][bucket_index].print_contents();
-			//optimization: if find a new peelable bucket, add it to queue
-			//need to be careful that don't add same key twice
-			if( can_peel(subIBLTs[i][bucket_index]) ) {
-				//printf("Trying to peel key from other buckets\n");
-				new_peelables.insert(subIBLTs[i][bucket_index]);
-			}
-		}
-		//only insert new unique keys to the queue
-		for(auto it = new_peelables.begin(); it != new_peelables.end(); ++it) {
-			// if( new_peelables.size() > 1) {
-			// 	printf("New peelables:\n");
-			// 	(*it).print_contents();
-			// }
-			peelable_keys.emplace_back(*it);
+			
 		}
 	}
+
+	//need to think about design decision. Use bucket type when really only need key and hash.
+	//only really need key, but for efficiency sake, want to keep hash along for the ride
+	// void peel_key(bucket_type& peelable_bucket, std::deque<bucket_type>& peelable_keys) {
+	// 	std::set<bucket_type> new_peelables;
+	// 	size_t bucket_index;
+	// 	for(size_t i = 0; i < num_hashfns; ++i) {
+	// 		key_type buf;
+	// 		peelable_bucket.key_sum.extract_key(buf);
+	// 		bucket_index = get_bucket_index(buf, i);
+	// 		// printf("Before removing:\n");
+	// 		// subIBLTs[i][bucket_index].print_contents();
+	// 		subIBLTs[i][bucket_index].remove(peelable_bucket);
+	// 		// printf("After removing:\n");
+	// 		// subIBLTs[i][bucket_index].print_contents();
+	// 		//optimization: if find a new peelable bucket, add it to queue
+	// 		//need to be careful that don't add same key twice
+	// 		if( can_peel(subIBLTs[i][bucket_index]) ) {
+	// 			//printf("Trying to peel key from other buckets\n");
+	// 			new_peelables.insert(subIBLTs[i][bucket_index]);
+	// 		}
+	// 	}
+	// 	//only insert new unique keys to the queue
+	// 	for(auto it = new_peelables.begin(); it != new_peelables.end(); ++it) {
+	// 		// if( new_peelables.size() > 1) {
+	// 		// 	printf("New peelables:\n");
+	// 		// 	(*it).print_contents();
+	// 		// }
+	// 		peelable_keys.emplace_back(*it);
+	// 	}
+	// }
 	
 	//TODO: handle case of removing non-existent keys
 	//Will need to iterate from -nparties+1 to n_parties-1 (skipping 0)
