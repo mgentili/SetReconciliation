@@ -1,0 +1,7 @@
+package file_sync;
+
+message Round2 {
+	repeated bool chunk_exists = 1 [packed=true]; //for each chunk server has, whether client has
+	repeated string new_chunk_info = 3 ; //contents of each chunk that client doesn't have
+	repeated uint32 existing_chunk_encoding = 4 [packed=true];
+}

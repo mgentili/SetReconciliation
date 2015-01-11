@@ -10,7 +10,8 @@ TABULATION_SRCS=tabulation_testing.cpp
 BASIC_FIELD_SRCS=field_testing.cpp
 FINGERPRINT_SRCS=fingerprint_testing.cpp
 FILE_SYNC_SRCS=file_sync_testing.cpp file_sync.pb.cpp
-SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS)
+STRATA_SRCS=StrataEstimator_testing.cpp
+SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS) $(STRATA_SRCS)
 OBJS=$(SRCS:%.cpp=obj/%.o)
 
 BASIC_IBLT=bin/basic_testing
@@ -19,7 +20,8 @@ TABULATION=bin/tabulation_testing
 BASIC_FIELD=bin/field_testing
 FINGERPRINT=bin/fingerprint_testing
 SYNC=bin/file_sync_testing
-PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC)
+STRATA=bin/strata_testing
+PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA)
 
 .PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync
 default: all
@@ -30,6 +32,7 @@ multi_iblt: $(MULTI_IBLT)
 field: $(BASIC_FIELD)
 fingerprint: $(FINGERPRINT)
 sync: $(SYNC)
+strata: $(STRATA)
 
 obj/%.o: src/%.cpp
 	$(CXX) $(CPPFLAGS) -c -MMD -MP $< -o $@
@@ -37,7 +40,7 @@ obj/%.o: src/%.cpp
 DEPS=$(OBJS:%.o=%.d)
 
 #lala:;echo $(FINGERPRINT_SRCS:%.cpp=obj/%.o)
-
+#protoc --proto_path=./src --cpp_out=./src src/file_sync.proto
 #obj/%.d: src/%.cpp
 #	$(CC) $(CFLAGS) -M -MF $@ -MT $(@:%.d=%.o) $^
 
@@ -57,6 +60,9 @@ $(FINGERPRINT): $(COMMON_SRCS:%.cpp=obj/%.o) $(FINGERPRINT_SRCS:%.cpp=obj/%.o)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 $(SYNC): $(COMMON_SRCS:%.cpp=obj/%.o) $(FILE_SYNC_SRCS:%.cpp=obj/%.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+$(STRATA): $(COMMON_SRCS:%.cpp=obj/%.o) $(STRATA_SRCS:%.cpp=obj/%.o)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 clean:

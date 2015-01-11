@@ -10,10 +10,10 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG
-#  define IBLT_DEBUG(x)  std::cout << x;
+#  define IBLT_DEBUG(x)  do { std::cerr << x << std::endl; } while(0)
 #else
 #  define IBLT_DEBUG(x)  do {} while (0)
 #endif

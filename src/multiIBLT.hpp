@@ -154,10 +154,13 @@ class multiIBLT {
 	multiIBLT(size_t bucket_count, size_t num_hashfns): 
 							num_buckets(bucket_count), 
 							num_hashfns(num_hashfns),
-							buckets_per_subIBLT(num_buckets/num_hashfns),
 							subIBLTs(num_hashfns),
 							sub_hashers(num_hashfns) {
+		while( num_buckets % num_hashfns != 0) {
+			++num_buckets;
+		}
 		assert(num_buckets % num_hashfns == 0);
+		buckets_per_subIBLT = num_buckets/num_hashfns;
 		key_hasher.set_seed(0);
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			subIBLTs[i].resize(buckets_per_subIBLT);

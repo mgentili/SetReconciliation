@@ -93,62 +93,33 @@ std::string decompress_string(const std::string& str)
     return outstring;
 }
 
-// /** Small dumb tool (de)compressing cin to cout. It holds all input in memory,
-//   * so don't use it for huge files. */
-// int main(int argc, char* argv[])
-// {
-//     std::string allinput;
-
-//     while (std::cin.good())     // read all input from cin
-//     {
-//         char inbuffer[32768];
-//         std::cin.read(inbuffer, sizeof(inbuffer));
-//         allinput.append(inbuffer, std::cin.gcount());
-//     }
-
-//     if (argc >= 2 && strcmp(argv[1], "-d") == 0)
-//     {
-//         std::string cstr = decompress_string( allinput );
-
-//         std::cerr << "Inflated data: "
-//                   << allinput.size() << " -> " << cstr.size()
-//                   << " (" << std::setprecision(1) << std::fixed
-//                   << ( ((float)cstr.size() / (float)allinput.size() - 1.0) * 100.0 )
-//                   << "% increase).\n";
-
-//         std::cout << cstr;
-//     }
-//     else
-//     {
-//         std::string cstr = compress_string( allinput );
-
-//         std::cerr << "Deflated data: "
-//                   << allinput.size() << " -> " << cstr.size()
-//                   << " (" << std::setprecision(1) << std::fixed
-//                   << ( (1.0 - (float)cstr.size() / (float)allinput.size()) * 100.0)
-//                   << "% saved).\n";
-
-//         std::cout << cstr;
-//     }
-// }
-
-int main() {
+int main(int argc, char* argv[]) {
 	static const size_t n_parties = 2;
 	typedef uint64_t hash_type;
 	typedef FileSynchronizer<n_parties, hash_type> fsync_type;
 	fsync_type file_sync;
-	const char* file1 = "tmp1.txt";
-	const char* file2 = "tmp2.txt";
-	double similarity = 0.999;
-	int file_len = 10000;
-	// generate_random_file(file1, file_len);
-	// generate_similar_file(file1, file2, similarity);
-
+	if( argc < 3 ) {
+		std::cout << "./bin/file_sync_testing [file1] [file2] ([length] [similarity])" << std::endl;
+		exit(1);
+	}
+	const char* file1 = argv[1];
+	const char* file2 = argv[2];
+	if(argc == 5) {
+		int file_len = stoi(argv[3]);
+		double similarity = std::stod(argv[4]);
+		std::cout << "Similarity: " << similarity << ", File length: " << file_len << ", file1: " << file1 << ", file2: " << file2 << std::endl;
+		generate_random_file(file1, file_len);
+		generate_similar_file(file1, file2, similarity);
+	}
+	
 	fsync_type::Round1Info rd1_A, rd1_B;
-	file_sync.send_IBLT(file1, rd1_A);
-	file_sync.send_IBLT(file2, rd1_B);
+	file_sync.determine_differenceA(file1, rd1_A);
+	size_t diff_est = file_sync.determine_differenceB(file2, rd1_B, rd1_A.estimator);
+	std::cout << "File1 Hashes: " << rd1_A.hashes_to_poslen.size() << "File2 Hashes: " << rd1_B.hashes_to_poslen.size() << std::endl;
+	std::cout << "Difference estimate is " << diff_est << std::endl;
+	file_sync.send_IBLT(rd1_A, diff_est);
 	fsync_type::Round2Info rd2_B;
-	file_sync.receive_IBLT(file2, rd1_B, *(rd1_A.iblt), rd2_B, rd1_A);
+	file_sync.receive_IBLT(file2, rd1_B, *(rd1_A.iblt), rd2_B);
 
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 	file_sync::Round2 rd2_serialized;
