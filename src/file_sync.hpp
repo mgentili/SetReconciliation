@@ -9,72 +9,24 @@
 #include "file_sync.pb.h"
 #include "StrataEstimator.hpp"
 
-template <size_t n_parties = 2, typename hash_type = uint64_t>
+template <size_t n_parties = 2, typename hash_type = uint32_t>
 class FileSynchronizer {
   public:
   	const size_t kgrams = 10;
   	const size_t window_size = 100;
   	typedef multiIBLT<n_parties, hash_type> iblt_type;
 
-	class Round1Info {
-	  public:
-  	  	StrataEstimator<n_parties, hash_type> estimator;
-	  	typedef multiIBLT<n_parties, hash_type> iblt_type;
-	  	std::vector<pair<hash_type, size_t> > hashes; //hash and length
-	  	std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen; //mapping from hash to position in file and length
-	  	iblt_type* iblt;
-	};
+  	class Round1Info;
+  	class Round2Info;
 
-	class Round2Info { //info to update A to have the same file as B
-	  public:
-		std::vector<bool> chunk_exists;  //for each chunk B has, whether A has
-		std::vector<std::string> new_chunk_info; //length and contents of each chunk that A doesn't have
-		std::vector<size_t> existing_chunk_encoding; //index of chunk hash within client's 
-
-		size_t size_in_bits() { // in bits
-			size_t tot_bits = 0;
-			tot_bits += chunk_exists.size();
-			for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
-				tot_bits += it->size()*8;
-			}
-			tot_bits += existing_chunk_encoding.size() * 32;
-			return tot_bits;
-		}
-
-		void serialize(file_sync::Round2& rd2) {
-			for(auto it = chunk_exists.begin(); it != chunk_exists.end(); ++it) {
-				rd2.add_chunk_exists(*it);
-			}
-
-			for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
-				rd2.add_new_chunk_info(*it);
-			}
-
-			for(auto it = existing_chunk_encoding.begin(); it != existing_chunk_encoding.end(); ++it) {
-				rd2.add_existing_chunk_encoding(*it);
-			}
-		}
-
-		void deserialize(file_sync::Round2& rd2) {
-			for(int i = 0; i < rd2.chunk_exists_size(); ++i) {
-				chunk_exists.push_back(rd2.chunk_exists(i));
-			}
-
-			for(int i = 0; i < rd2.new_chunk_info_size(); ++i) {
-				new_chunk_info.push_back(rd2.new_chunk_info(i));
-			}
-
-			for(int i = 0; i < rd2.existing_chunk_encoding_size(); ++i) {
-				existing_chunk_encoding.push_back(rd2.existing_chunk_encoding(i));
-			}
-		}
-	};
+  	Round1Info my_rd1;
+  	Round2Info my_rd2;
 
   	FileSynchronizer() {};
 
   	//Party A fills his structure with info to estimate set difference
   	//and fills the rest of the hash structure while he's at it
-  	void determine_differenceA(const char* filename, Round1Info& my_rd1) {
+  	void process_file(const char* filename) {
   		Fingerprinter<hash_type> f(kgrams, window_size);
 		f.digest_file( filename, my_rd1.hashes);
 
@@ -95,35 +47,36 @@ class FileSynchronizer {
   	 	}
   	}
 
-  	size_t determine_differenceB(const char* filename, Round1Info& my_rd1, StrataEstimator<n_parties, hash_type>& cp_estimator ) {
-  		determine_differenceA(filename, my_rd1);
+  	size_t get_difference_estimate(StrataEstimator<n_parties, hash_type>& cp_estimator) {
   		my_rd1.estimator.add(cp_estimator, 1);
   		size_t diff_est = my_rd1.estimator.set_diff_estimate();
   		return diff_est;
   	}
 
-  	void send_IBLT(Round1Info& my_rd1, size_t bucket_estimate) {
-  		size_t num_buckets = bucket_estimate * 2;
+  	void create_IBLT(size_t bucket_estimate) {
+  		size_t num_buckets = bucket_estimate * 3/2;
   		size_t num_hashfns = ( bucket_estimate < 200 ) ? 3 : 4;
   		my_rd1.iblt = new iblt_type(num_buckets, num_hashfns);
-		fill_IBLT(my_rd1);		
+		fill_IBLT();		
   	}
 
-  	void fill_IBLT(Round1Info& my_rd1) {
+  	void fill_IBLT() {
   		for(auto it = my_rd1.hashes_to_poslen.begin(); it != my_rd1.hashes_to_poslen.end(); ++it) {
 			my_rd1.iblt->insert_key(it->first);
 		}
   	}
 
-  	void receive_IBLT(const char* filename, Round1Info& my_rd1, iblt_type& cp_IBLT, Round2Info& my_rd2) {
+  	void receive_IBLT(const char* filename, iblt_type& cp_IBLT) {
   		iblt_type resIBLT(cp_IBLT.num_buckets, cp_IBLT.num_hashfns);
-  		my_rd1.iblt = new iblt_type(cp_IBLT.num_buckets, cp_IBLT.num_hashfns);
-		fill_IBLT(my_rd1);	
 
   		resIBLT.add(*(my_rd1.iblt), 0); // my unique keys are in index 0
   		resIBLT.add(cp_IBLT, 1); // counterparty's unique keys are in index 1
   		std::unordered_map<hash_type, std::vector<int> > distinct_keys;
-  		resIBLT.peel(distinct_keys);
+  		bool res = resIBLT.peel(distinct_keys);
+  		if( !res ) {
+  			std::cout << "Failed to peel, need to retry" << std::endl;
+  			exit(1);
+  		}
 
   		std::cout << "Peeled distinct keys" << distinct_keys.size() << std::endl;
   		// find keys that are unique to self and counterparty. Note, cannot use peeling directly
@@ -191,7 +144,7 @@ class FileSynchronizer {
   		delete[] buf;
   	}
 
-  	void reconstruct_file(const char* filename, Round1Info& my_rd1, Round2Info& cp_rd2) {
+  	void reconstruct_file(const char* filename, Round2Info& cp_rd2) {
   		FILE* fp = fopen("temp.txt", "w");
 		if( !fp ) {
 			cout << "Unable to open file" << endl;
@@ -227,4 +180,59 @@ class FileSynchronizer {
   	}
 };
 
+template <size_t n_parties, typename hash_type>
+class FileSynchronizer<n_parties, hash_type>::Round1Info {
+  public:
+	  	StrataEstimator<n_parties, hash_type> estimator;
+  	typedef multiIBLT<n_parties, hash_type> iblt_type;
+  	std::vector<pair<hash_type, size_t> > hashes; //hash and length
+  	std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen; //mapping from hash to position in file and length
+  	iblt_type* iblt;
+};
+
+template <size_t n_parties, typename hash_type>
+class FileSynchronizer<n_parties, hash_type>::Round2Info { //info to update A to have the same file as B
+  public:
+	std::vector<bool> chunk_exists;  //for each chunk B has, whether A has
+	std::vector<std::string> new_chunk_info; //length and contents of each chunk that A doesn't have
+	std::vector<size_t> existing_chunk_encoding; //index of chunk hash within client's 
+
+	size_t size_in_bits() { // in bits
+		size_t tot_bits = 0;
+		tot_bits += chunk_exists.size();
+		for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
+			tot_bits += it->size()*8;
+		}
+		tot_bits += existing_chunk_encoding.size() * 32;
+		return tot_bits;
+	}
+
+	void serialize(file_sync::Round2& rd2) {
+		for(auto it = chunk_exists.begin(); it != chunk_exists.end(); ++it) {
+			rd2.add_chunk_exists(*it);
+		}
+
+		for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
+			rd2.add_new_chunk_info(*it);
+		}
+
+		for(auto it = existing_chunk_encoding.begin(); it != existing_chunk_encoding.end(); ++it) {
+			rd2.add_existing_chunk_encoding(*it);
+		}
+	}
+
+	void deserialize(file_sync::Round2& rd2) {
+		for(int i = 0; i < rd2.chunk_exists_size(); ++i) {
+			chunk_exists.push_back(rd2.chunk_exists(i));
+		}
+
+		for(int i = 0; i < rd2.new_chunk_info_size(); ++i) {
+			new_chunk_info.push_back(rd2.new_chunk_info(i));
+		}
+
+		for(int i = 0; i < rd2.existing_chunk_encoding_size(); ++i) {
+			existing_chunk_encoding.push_back(rd2.existing_chunk_encoding(i));
+		}
+	}
+};
 #endif

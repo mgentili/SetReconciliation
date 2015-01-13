@@ -51,13 +51,16 @@ class IBLT_tester {
 		for( uint i = 0; i < iblts.size(); ++i) {
 			resIBLT.add(*iblts[i], i);
 		}
-		
+		// std::cout << "Before peeling: " << std::endl;
+		// resIBLT.print_contents();
 		//get keys that aren't in all IBLTs
 		std::unordered_set<key_type> distinct_keys;
 		keyhand.set_difference(n_parties, key_assignments, distinct_keys);
 
 		std::unordered_set<key_type> peeled_keys;
 		bool res1 = resIBLT.peel(peeled_keys);
+		// std::cout << "After peeling: " << std::endl;
+		// resIBLT.print_contents();
 		std::cout << "Distinct keys size: " << distinct_keys.size() << " Peeled keys size: " << peeled_keys.size() << std::endl;
 
 		if( !res1 )
@@ -124,31 +127,31 @@ void testAdd(int seed, int num_hashfns, int num_buckets,
 
 	keyhand.generate_sample_keys( num_shared_keys, num_distinct_keys, shared_keys, indiv_keys);
 	for( auto it = shared_keys.begin(); it != shared_keys.end(); ++it) {
-		//IBLT_DEBUG("Inserting to all key " << *it << std::endl);
+		IBLT_DEBUG("Inserting to all key " << *it << std::endl);
 		for(uint i = 0; i < iblts.size(); ++i) {
 			iblts[i]->insert_key( *it );
 		}
 	}
 	for( uint i = 0; i < indiv_keys.size(); ++i ) {
 		for(auto it = indiv_keys[i].begin(); it != indiv_keys[i].end(); ++it) {
-			//IBLT_DEBUG("Inserting to IBLT " << i << "key: " << *it << std::endl);
+			IBLT_DEBUG("Inserting to IBLT " << i << "key: " << *it << std::endl);
 			iblts[i]->insert_key(*it);
 		}
-		//IBLT_DEBUG("Printing contents of IBLT" << i << std::endl);
-		//iblts[i]->print_contents();
+		IBLT_DEBUG("Printing contents of IBLT" << i << std::endl);
+		iblts[i]->print_contents();
 	}
 
 	iblt_type resIBLT(num_buckets, num_hashfns);
 	for( uint i = 0; i < iblts.size(); ++i) {
-		resIBLT.add(*iblts[i]);
+		resIBLT.add(*iblts[i], i);
 	}
 	
-	//IBLT_DEBUG("Printing contents of Result IBLT before peeling" << std::endl);
-	//resIBLT.print_contents();
+	IBLT_DEBUG("Printing contents of Result IBLT before peeling" << std::endl);
+	resIBLT.print_contents();
 	std::unordered_set<key_type> peeled_keys;
 	bool res1 = resIBLT.peel(peeled_keys);
-	//IBLT_DEBUG("Printing contents of Result IBLT after peeling" << std::endl);
-	//resIBLT.print_contents();
+	IBLT_DEBUG("Printing contents of Result IBLT after peeling" << std::endl);
+	resIBLT.print_contents();
 	
 	if( !res1 )
 		printf("Failed to peel\n");
@@ -185,11 +188,9 @@ void simulateIBLT(int num_buckets, int num_hashfns, int num_trials, double pctsh
 }
 
 template <typename key_type = uint64_t, int key_bits = 8*sizeof(key_type)>
-void simulateTwoParty() {
-	const int num_buckets = 1 << 20;
+void simulateTwoParty(int num_buckets, int num_keys) {
 	const int num_trials = 10;
 	const int num_hashfns = 4;
-	const int num_keys = 1000000;
 	for(int i = 1; i < num_trials; ++i) {
 	    IBLT_tester<2, key_type, key_bits> tester(num_keys, num_buckets, num_hashfns);
 	    double insert_prob = i/((double) num_trials);
@@ -198,11 +199,9 @@ void simulateTwoParty() {
 } 
 
 template <typename key_type = uint64_t, int key_bits = 8*sizeof(key_type)>
-void simulateThreeParty() {
-	const int num_buckets = 1 << 15;
+void simulateThreeParty(int num_buckets, int num_keys) {
 	const int num_trials = 10;
 	const int num_hashfns = 4;
-	const int num_keys = 40000;
 	for(int i = 1; i < num_trials; ++i) {
 	    IBLT_tester<3, key_type, key_bits> tester(num_keys, num_buckets, num_hashfns);
 	    double insert_prob = i/((double) num_trials);
@@ -211,7 +210,11 @@ void simulateThreeParty() {
 } 
 
 int main() {
-	simulateTwoParty<uint32_t>();
-	//simulateThreeParty<uint32_t>();
-	//simulateThreeParty<std::string, 64>();
+	const int num_buckets = 1 << 20;
+	const int num_keys = 1 << 20;
+	//simulateTwoParty<uint32_t>(num_buckets, num_keys);
+	//simulateThreeParty<uint32_t>(num_buckets, num_keys);
+	//simulateThreeParty<std::string, 64>(num_buckets, num_keys);
+	simulateTwoParty<std::string, 320>(num_buckets, num_keys);
+	//testAdd<std::string, 320>(0, 4, num_buckets, 0, 1);
 }

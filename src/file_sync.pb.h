@@ -34,6 +34,10 @@ void protobuf_AssignDesc_file_5fsync_2eproto();
 void protobuf_ShutdownFile_file_5fsync_2eproto();
 
 class Round2;
+class strata_estimator;
+class IBLT;
+class IBLT_bucket_extended;
+class IBLT_bucket;
 
 // ===================================================================
 
@@ -148,6 +152,364 @@ class Round2 : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static Round2* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class strata_estimator : public ::google::protobuf::Message {
+ public:
+  strata_estimator();
+  virtual ~strata_estimator();
+
+  strata_estimator(const strata_estimator& from);
+
+  inline strata_estimator& operator=(const strata_estimator& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const strata_estimator& default_instance();
+
+  void Swap(strata_estimator* other);
+
+  // implements Message ----------------------------------------------
+
+  strata_estimator* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const strata_estimator& from);
+  void MergeFrom(const strata_estimator& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .file_sync.IBLT strata = 1;
+  inline int strata_size() const;
+  inline void clear_strata();
+  static const int kStrataFieldNumber = 1;
+  inline const ::file_sync::IBLT& strata(int index) const;
+  inline ::file_sync::IBLT* mutable_strata(int index);
+  inline ::file_sync::IBLT* add_strata();
+  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >&
+      strata() const;
+  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >*
+      mutable_strata();
+
+  // @@protoc_insertion_point(class_scope:file_sync.strata_estimator)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT > strata_;
+  friend void  protobuf_AddDesc_file_5fsync_2eproto();
+  friend void protobuf_AssignDesc_file_5fsync_2eproto();
+  friend void protobuf_ShutdownFile_file_5fsync_2eproto();
+
+  void InitAsDefaultInstance();
+  static strata_estimator* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IBLT : public ::google::protobuf::Message {
+ public:
+  IBLT();
+  virtual ~IBLT();
+
+  IBLT(const IBLT& from);
+
+  inline IBLT& operator=(const IBLT& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IBLT& default_instance();
+
+  void Swap(IBLT* other);
+
+  // implements Message ----------------------------------------------
+
+  IBLT* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IBLT& from);
+  void MergeFrom(const IBLT& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+  inline int buckets_size() const;
+  inline void clear_buckets();
+  static const int kBucketsFieldNumber = 1;
+  inline const ::file_sync::IBLT_bucket_extended& buckets(int index) const;
+  inline ::file_sync::IBLT_bucket_extended* mutable_buckets(int index);
+  inline ::file_sync::IBLT_bucket_extended* add_buckets();
+  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >&
+      buckets() const;
+  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >*
+      mutable_buckets();
+
+  // @@protoc_insertion_point(class_scope:file_sync.IBLT)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended > buckets_;
+  friend void  protobuf_AddDesc_file_5fsync_2eproto();
+  friend void protobuf_AssignDesc_file_5fsync_2eproto();
+  friend void protobuf_ShutdownFile_file_5fsync_2eproto();
+
+  void InitAsDefaultInstance();
+  static IBLT* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IBLT_bucket_extended : public ::google::protobuf::Message {
+ public:
+  IBLT_bucket_extended();
+  virtual ~IBLT_bucket_extended();
+
+  IBLT_bucket_extended(const IBLT_bucket_extended& from);
+
+  inline IBLT_bucket_extended& operator=(const IBLT_bucket_extended& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IBLT_bucket_extended& default_instance();
+
+  void Swap(IBLT_bucket_extended* other);
+
+  // implements Message ----------------------------------------------
+
+  IBLT_bucket_extended* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IBLT_bucket_extended& from);
+  void MergeFrom(const IBLT_bucket_extended& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required .file_sync.IBLT_bucket bucket = 1;
+  inline bool has_bucket() const;
+  inline void clear_bucket();
+  static const int kBucketFieldNumber = 1;
+  inline const ::file_sync::IBLT_bucket& bucket() const;
+  inline ::file_sync::IBLT_bucket* mutable_bucket();
+  inline ::file_sync::IBLT_bucket* release_bucket();
+  inline void set_allocated_bucket(::file_sync::IBLT_bucket* bucket);
+
+  // repeated bool has_key = 2 [packed = true];
+  inline int has_key_size() const;
+  inline void clear_has_key();
+  static const int kHasKeyFieldNumber = 2;
+  inline bool has_key(int index) const;
+  inline void set_has_key(int index, bool value);
+  inline void add_has_key(bool value);
+  inline const ::google::protobuf::RepeatedField< bool >&
+      has_key() const;
+  inline ::google::protobuf::RepeatedField< bool >*
+      mutable_has_key();
+
+  // @@protoc_insertion_point(class_scope:file_sync.IBLT_bucket_extended)
+ private:
+  inline void set_has_bucket();
+  inline void clear_has_bucket();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::file_sync::IBLT_bucket* bucket_;
+  ::google::protobuf::RepeatedField< bool > has_key_;
+  mutable int _has_key_cached_byte_size_;
+  friend void  protobuf_AddDesc_file_5fsync_2eproto();
+  friend void protobuf_AssignDesc_file_5fsync_2eproto();
+  friend void protobuf_ShutdownFile_file_5fsync_2eproto();
+
+  void InitAsDefaultInstance();
+  static IBLT_bucket_extended* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IBLT_bucket : public ::google::protobuf::Message {
+ public:
+  IBLT_bucket();
+  virtual ~IBLT_bucket();
+
+  IBLT_bucket(const IBLT_bucket& from);
+
+  inline IBLT_bucket& operator=(const IBLT_bucket& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IBLT_bucket& default_instance();
+
+  void Swap(IBLT_bucket* other);
+
+  // implements Message ----------------------------------------------
+
+  IBLT_bucket* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IBLT_bucket& from);
+  void MergeFrom(const IBLT_bucket& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required uint32 key_sum = 1;
+  inline bool has_key_sum() const;
+  inline void clear_key_sum();
+  static const int kKeySumFieldNumber = 1;
+  inline ::google::protobuf::uint32 key_sum() const;
+  inline void set_key_sum(::google::protobuf::uint32 value);
+
+  // required uint32 hash_sum = 2;
+  inline bool has_hash_sum() const;
+  inline void clear_hash_sum();
+  static const int kHashSumFieldNumber = 2;
+  inline ::google::protobuf::uint32 hash_sum() const;
+  inline void set_hash_sum(::google::protobuf::uint32 value);
+
+  // required uint32 count = 3;
+  inline bool has_count() const;
+  inline void clear_count();
+  static const int kCountFieldNumber = 3;
+  inline ::google::protobuf::uint32 count() const;
+  inline void set_count(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:file_sync.IBLT_bucket)
+ private:
+  inline void set_has_key_sum();
+  inline void clear_has_key_sum();
+  inline void set_has_hash_sum();
+  inline void clear_has_hash_sum();
+  inline void set_has_count();
+  inline void clear_has_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 key_sum_;
+  ::google::protobuf::uint32 hash_sum_;
+  ::google::protobuf::uint32 count_;
+  friend void  protobuf_AddDesc_file_5fsync_2eproto();
+  friend void protobuf_AssignDesc_file_5fsync_2eproto();
+  friend void protobuf_ShutdownFile_file_5fsync_2eproto();
+
+  void InitAsDefaultInstance();
+  static IBLT_bucket* default_instance_;
 };
 // ===================================================================
 
@@ -268,6 +630,225 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 Round2::mutable_existing_chunk_encoding() {
   // @@protoc_insertion_point(field_mutable_list:file_sync.Round2.existing_chunk_encoding)
   return &existing_chunk_encoding_;
+}
+
+// -------------------------------------------------------------------
+
+// strata_estimator
+
+// repeated .file_sync.IBLT strata = 1;
+inline int strata_estimator::strata_size() const {
+  return strata_.size();
+}
+inline void strata_estimator::clear_strata() {
+  strata_.Clear();
+}
+inline const ::file_sync::IBLT& strata_estimator::strata(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.strata_estimator.strata)
+  return strata_.Get(index);
+}
+inline ::file_sync::IBLT* strata_estimator::mutable_strata(int index) {
+  // @@protoc_insertion_point(field_mutable:file_sync.strata_estimator.strata)
+  return strata_.Mutable(index);
+}
+inline ::file_sync::IBLT* strata_estimator::add_strata() {
+  // @@protoc_insertion_point(field_add:file_sync.strata_estimator.strata)
+  return strata_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >&
+strata_estimator::strata() const {
+  // @@protoc_insertion_point(field_list:file_sync.strata_estimator.strata)
+  return strata_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >*
+strata_estimator::mutable_strata() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.strata_estimator.strata)
+  return &strata_;
+}
+
+// -------------------------------------------------------------------
+
+// IBLT
+
+// repeated .file_sync.IBLT_bucket_extended buckets = 1;
+inline int IBLT::buckets_size() const {
+  return buckets_.size();
+}
+inline void IBLT::clear_buckets() {
+  buckets_.Clear();
+}
+inline const ::file_sync::IBLT_bucket_extended& IBLT::buckets(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT.buckets)
+  return buckets_.Get(index);
+}
+inline ::file_sync::IBLT_bucket_extended* IBLT::mutable_buckets(int index) {
+  // @@protoc_insertion_point(field_mutable:file_sync.IBLT.buckets)
+  return buckets_.Mutable(index);
+}
+inline ::file_sync::IBLT_bucket_extended* IBLT::add_buckets() {
+  // @@protoc_insertion_point(field_add:file_sync.IBLT.buckets)
+  return buckets_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >&
+IBLT::buckets() const {
+  // @@protoc_insertion_point(field_list:file_sync.IBLT.buckets)
+  return buckets_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >*
+IBLT::mutable_buckets() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT.buckets)
+  return &buckets_;
+}
+
+// -------------------------------------------------------------------
+
+// IBLT_bucket_extended
+
+// required .file_sync.IBLT_bucket bucket = 1;
+inline bool IBLT_bucket_extended::has_bucket() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void IBLT_bucket_extended::set_has_bucket() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void IBLT_bucket_extended::clear_has_bucket() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void IBLT_bucket_extended::clear_bucket() {
+  if (bucket_ != NULL) bucket_->::file_sync::IBLT_bucket::Clear();
+  clear_has_bucket();
+}
+inline const ::file_sync::IBLT_bucket& IBLT_bucket_extended::bucket() const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT_bucket_extended.bucket)
+  return bucket_ != NULL ? *bucket_ : *default_instance_->bucket_;
+}
+inline ::file_sync::IBLT_bucket* IBLT_bucket_extended::mutable_bucket() {
+  set_has_bucket();
+  if (bucket_ == NULL) bucket_ = new ::file_sync::IBLT_bucket;
+  // @@protoc_insertion_point(field_mutable:file_sync.IBLT_bucket_extended.bucket)
+  return bucket_;
+}
+inline ::file_sync::IBLT_bucket* IBLT_bucket_extended::release_bucket() {
+  clear_has_bucket();
+  ::file_sync::IBLT_bucket* temp = bucket_;
+  bucket_ = NULL;
+  return temp;
+}
+inline void IBLT_bucket_extended::set_allocated_bucket(::file_sync::IBLT_bucket* bucket) {
+  delete bucket_;
+  bucket_ = bucket;
+  if (bucket) {
+    set_has_bucket();
+  } else {
+    clear_has_bucket();
+  }
+  // @@protoc_insertion_point(field_set_allocated:file_sync.IBLT_bucket_extended.bucket)
+}
+
+// repeated bool has_key = 2 [packed = true];
+inline int IBLT_bucket_extended::has_key_size() const {
+  return has_key_.size();
+}
+inline void IBLT_bucket_extended::clear_has_key() {
+  has_key_.Clear();
+}
+inline bool IBLT_bucket_extended::has_key(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT_bucket_extended.has_key)
+  return has_key_.Get(index);
+}
+inline void IBLT_bucket_extended::set_has_key(int index, bool value) {
+  has_key_.Set(index, value);
+  // @@protoc_insertion_point(field_set:file_sync.IBLT_bucket_extended.has_key)
+}
+inline void IBLT_bucket_extended::add_has_key(bool value) {
+  has_key_.Add(value);
+  // @@protoc_insertion_point(field_add:file_sync.IBLT_bucket_extended.has_key)
+}
+inline const ::google::protobuf::RepeatedField< bool >&
+IBLT_bucket_extended::has_key() const {
+  // @@protoc_insertion_point(field_list:file_sync.IBLT_bucket_extended.has_key)
+  return has_key_;
+}
+inline ::google::protobuf::RepeatedField< bool >*
+IBLT_bucket_extended::mutable_has_key() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT_bucket_extended.has_key)
+  return &has_key_;
+}
+
+// -------------------------------------------------------------------
+
+// IBLT_bucket
+
+// required uint32 key_sum = 1;
+inline bool IBLT_bucket::has_key_sum() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void IBLT_bucket::set_has_key_sum() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void IBLT_bucket::clear_has_key_sum() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void IBLT_bucket::clear_key_sum() {
+  key_sum_ = 0u;
+  clear_has_key_sum();
+}
+inline ::google::protobuf::uint32 IBLT_bucket::key_sum() const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT_bucket.key_sum)
+  return key_sum_;
+}
+inline void IBLT_bucket::set_key_sum(::google::protobuf::uint32 value) {
+  set_has_key_sum();
+  key_sum_ = value;
+  // @@protoc_insertion_point(field_set:file_sync.IBLT_bucket.key_sum)
+}
+
+// required uint32 hash_sum = 2;
+inline bool IBLT_bucket::has_hash_sum() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void IBLT_bucket::set_has_hash_sum() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void IBLT_bucket::clear_has_hash_sum() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void IBLT_bucket::clear_hash_sum() {
+  hash_sum_ = 0u;
+  clear_has_hash_sum();
+}
+inline ::google::protobuf::uint32 IBLT_bucket::hash_sum() const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT_bucket.hash_sum)
+  return hash_sum_;
+}
+inline void IBLT_bucket::set_hash_sum(::google::protobuf::uint32 value) {
+  set_has_hash_sum();
+  hash_sum_ = value;
+  // @@protoc_insertion_point(field_set:file_sync.IBLT_bucket.hash_sum)
+}
+
+// required uint32 count = 3;
+inline bool IBLT_bucket::has_count() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void IBLT_bucket::set_has_count() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void IBLT_bucket::clear_has_count() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void IBLT_bucket::clear_count() {
+  count_ = 0u;
+  clear_has_count();
+}
+inline ::google::protobuf::uint32 IBLT_bucket::count() const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT_bucket.count)
+  return count_;
+}
+inline void IBLT_bucket::set_count(::google::protobuf::uint32 value) {
+  set_has_count();
+  count_ = value;
+  // @@protoc_insertion_point(field_set:file_sync.IBLT_bucket.count)
 }
 
 

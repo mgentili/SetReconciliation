@@ -13,10 +13,12 @@
 #include <bitset>
 #include <unordered_map>
 #include "tabulation_hashing.hpp"
+#include "hash_util.hpp"
 #include "basicField.hpp"
-#include "MurmurHash2.hpp"
+#include "file_sync.pb.h"
+
 //structure of a bucket within an IBLT
-template <size_t n_parties = 2, typename key_type = uint64_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint64_t>
+template <size_t n_parties = 2, typename key_type = uint32_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint32_t>
 class multiIBLT_bucket {
   public:
   	typedef multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> this_bucket_type;
@@ -24,6 +26,23 @@ class multiIBLT_bucket {
 	Field<n_parties, hash_type, 8*sizeof(hash_type)> hash_sum;
 	SimpleField<n_parties> count;
 	multiIBLT_bucket(): key_sum(), hash_sum(), count() {}
+
+	size_t size_in_bits() {
+		//TODO: THEORETICAL
+		return( key_bits + 8*sizeof(hash_type) + 8*sizeof(int));
+	}
+
+	void serialize(file_sync::IBLT_bucket& bucket) {
+		bucket.set_key_sum(key_sum.arg);
+		bucket.set_hash_sum(hash_sum.arg);
+		bucket.set_count(count.arg);
+	}
+
+	void deserialize(const file_sync::IBLT_bucket& bucket) {
+		key_sum.arg = bucket.key_sum();
+		hash_sum.arg = bucket.hash_sum();
+		count.arg = bucket.count();
+	}
 
 	void add(const key_type& k, const hash_type& h) {
 		key_sum.add(k);
@@ -77,13 +96,41 @@ class multiIBLT_bucket {
 	}
 };
 
-template <size_t n_parties = 2, typename key_type = uint64_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint64_t>
+template <size_t n_parties = 2, typename key_type = uint32_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint32_t>
 class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> {
   public:
   	typedef multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> parent_bucket_type;
   	typedef multiIBLT_bucket_extended<n_parties, key_type, key_bits, hash_type> this_bucket_type;
 	std::bitset<n_parties> has_key;
 	multiIBLT_bucket_extended(): has_key(0) {}
+
+	size_t size_in_bits() {
+		//TODO: THEORETICAL
+		return( parent_bucket_type::size_in_bits() + n_parties);
+	}
+
+	void serialize(file_sync::IBLT_bucket_extended& bucket) {
+		file_sync::IBLT_bucket* basic_bucket = bucket.mutable_bucket();
+		parent_bucket_type::serialize(*basic_bucket);
+		for(size_t i = 0; i < n_parties; ++i) {
+			bucket.add_has_key(has_key[i]);
+		}
+	}
+
+	void deserialize(const file_sync::IBLT_bucket_extended& bucket) {
+		parent_bucket_type::deserialize(bucket.bucket());
+		for(size_t i = 0; i < n_parties; ++i) {
+			has_key[i] = bucket.has_key(i);
+		}
+	}
+
+	// void serialize(file_sync::IBLT_bucket& bucket) {
+	// 	parent_bucket_type::serialize();
+	// }
+
+	// void deserialize(const file_sync::IBLT_bucket& bucket) {
+	// 	parent_bucket_type::deserialize();
+	// }
 
 	void add(const this_bucket_type& counterparty_bucket) {
 		parent_bucket_type::add(counterparty_bucket);
@@ -132,13 +179,13 @@ Parameters:
 	hasher: type of hashfunction (should be able to hash keytype)
 **/
 template <size_t n_parties = 2, 
-	typename key_type = uint64_t,
+	typename key_type = uint32_t,
 	size_t key_bits = 8*sizeof(key_type),
-	typename hash_type = uint64_t, 
+	typename hash_type = uint32_t, 
 	// typename bucket_type = multiIBLT_bucket<n_parties, key_type, key_bits, hash_type>,
 	typename bucket_type = multiIBLT_bucket_extended<n_parties, key_type, key_bits, hash_type>,
-	typename hasher = TabulationHashing<key_type, key_bits, hash_type> >
-	//typename hasher = MurmurHashing<key_type, key_bits, hash_type> >
+	//typename hasher = TabulationHashing<key_bits, hash_type> >
+	typename hasher = MurmurHashing<key_bits, hash_type> >
 class multiIBLT {
   public:
   	typedef multiIBLT<n_parties, key_type, key_bits, hash_type, bucket_type, hasher> this_iblt_type;
@@ -168,6 +215,26 @@ class multiIBLT {
 		}
 	}
 
+	size_t size_in_bits() {
+		return( num_buckets * subIBLTs[0][0].size_in_bits() );
+	}
+	void serialize(file_sync::IBLT& iblt_serialized) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				file_sync::IBLT_bucket_extended* bucket = iblt_serialized.add_buckets();
+				subIBLTs[i][j].serialize(*bucket);
+			}
+		}
+	}
+
+	void deserialize(file_sync::IBLT& iblt_serialized) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				subIBLTs[i][j].deserialize(iblt_serialized.buckets((buckets_per_subIBLT*i+j)));
+			}
+		}
+	}
+
 	void add(const this_iblt_type& counterparty, size_t index) {
 		assert( counterparty.buckets_per_subIBLT == buckets_per_subIBLT 
 			&&  counterparty.num_hashfns == num_hashfns);
@@ -188,9 +255,16 @@ class multiIBLT {
 		}
 	}
 
+	void insert_keys(std::unordered_set<key_type>& keys) {
+		for(auto it = keys.begin(); it!= keys.end(); ++it) {
+			insert_key(*it);
+		}
+	}
+
 	void insert_key(const key_type& key) {
 		size_t bucket_index;
 		hash_type hashval = key_hasher.hash(key);
+		//std::cout << "Inserting key " << key << " with hash " << hashval << std::endl;
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			bucket_index = get_bucket_index(key, i);
 			subIBLTs[i][bucket_index].add( key, hashval);
@@ -344,7 +418,7 @@ class multiIBLT {
 				curr_bucket.key_sum.extract_key(buf);
 				curr_bucket.hash_sum.extract_key(expected_hash);
 				hash_type actual_hash = key_hasher.hash(buf);
-				//printf("Buffer: %lu, Actual Hash: %lu, Expected Hash: %lu\n", buf, actual_hash, expected_hash);
+				//std::cout << "Buffer: " << buf << ", Actual Hash: " << actual_hash << ", Expected Hash: " << expected_hash << std::endl;
 				if( expected_hash == actual_hash) {
 					//TODO: Fix for case of even # of parties
 					//Problem: If key in all IBLTs, then count = 0, but has_key=111
@@ -361,7 +435,7 @@ class multiIBLT {
 	}
 
 	//returns the bucket index of given key in given subIBLT
-	uint64_t get_bucket_index(const key_type& key, size_t subIBLT) {
+	uint32_t get_bucket_index(const key_type& key, size_t subIBLT) {
 		assert( subIBLT >= 0 && subIBLT < num_hashfns );
 		return sub_hashers[subIBLT].hash(key) % buckets_per_subIBLT;
 	}

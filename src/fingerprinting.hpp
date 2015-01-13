@@ -8,7 +8,7 @@
 #include <iostream>
 #include <assert.h>
 #include <stdio.h>
-#include "MurmurHash2.hpp"
+#include "hash_util.hpp"
 #include "IBLT_helpers.hpp"
 
 using namespace std;
@@ -175,11 +175,11 @@ class Fingerprinter {
 		for(; i < fp_hashes.size(); ++i) {	
 			size_t curr_len = fp_hashes[i].second - curr_pos;
 			// std::cout << "Abs pos" << fp_hashes[i].second << " Curr len" << curr_len << " Curr pos" << curr_pos << std::endl;
-			curr_pair = make_pair(MurmurHash64A(&buf[curr_pos], curr_len, 0), curr_len);
+			curr_pair = make_pair(HashUtil::MurmurHash64A(&buf[curr_pos], curr_len, 0), curr_len);
 			curr_pos += curr_len;
 			file_hashes.push_back(curr_pair);
 		}
-
+		delete[] buf;
 		return file_size;
 	}
 

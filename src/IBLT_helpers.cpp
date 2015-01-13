@@ -3,7 +3,7 @@
 size_t load_buffer_with_file(const char* filename, char** buf) {
 	FILE* fp = fopen(filename, "r");
 	if( !fp ) {
-		std::cerr << "Unable to open file" << std::endl;
+		std::cerr << "Unable to open file " << filename << std::endl;
 		exit(1);
 	}
 

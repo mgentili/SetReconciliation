@@ -95,9 +95,9 @@ std::string decompress_string(const std::string& str)
 
 int main(int argc, char* argv[]) {
 	static const size_t n_parties = 2;
-	typedef uint64_t hash_type;
+	typedef uint16_t hash_type;
 	typedef FileSynchronizer<n_parties, hash_type> fsync_type;
-	fsync_type file_sync;
+	fsync_type file_sync_A, file_sync_B;
 	if( argc < 3 ) {
 		std::cout << "./bin/file_sync_testing [file1] [file2] ([length] [similarity])" << std::endl;
 		exit(1);
@@ -111,23 +111,42 @@ int main(int argc, char* argv[]) {
 		generate_random_file(file1, file_len);
 		generate_similar_file(file1, file2, similarity);
 	}
-	
-	fsync_type::Round1Info rd1_A, rd1_B;
-	file_sync.determine_differenceA(file1, rd1_A);
-	size_t diff_est = file_sync.determine_differenceB(file2, rd1_B, rd1_A.estimator);
-	std::cout << "File1 Hashes: " << rd1_A.hashes_to_poslen.size() << "File2 Hashes: " << rd1_B.hashes_to_poslen.size() << std::endl;
-	std::cout << "Difference estimate is " << diff_est << std::endl;
-	file_sync.send_IBLT(rd1_A, diff_est);
-	fsync_type::Round2Info rd2_B;
-	file_sync.receive_IBLT(file2, rd1_B, *(rd1_A.iblt), rd2_B);
 
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
+	
+	//Determine estimated file difference
+	file_sync_A.process_file(file1);
+	file_sync_B.process_file(file2);
+	size_t diff_est = file_sync_B.get_difference_estimate(file_sync_A.my_rd1.estimator);
+	std::cout << "File1 Hashes: " << file_sync_A.my_rd1.hashes_to_poslen.size() << "File2 Hashes: " << file_sync_B.my_rd1.hashes_to_poslen.size() << std::endl;
+	std::cout << "Difference estimate is " << diff_est << std::endl;
+	
+	//Create IBLTs based on estimated difference, and process to determine differences
+	file_sync_A.create_IBLT(diff_est);
+	file_sync_B.create_IBLT(diff_est);
+
+	//Party A sends his IBLT to Party B
+	file_sync::IBLT A_iblt_protobuf, iblt_recreated;
+	(file_sync_A.my_rd1.iblt)->serialize(A_iblt_protobuf);
+	std::string A_iblt_bits;
+	A_iblt_protobuf.SerializeToString(&A_iblt_bits);
+	std::cout << "Serialized iblt structure is size (bits) " << A_iblt_bits.size()*8 << "vs actual" << (file_sync_A.my_rd1.iblt)->size_in_bits() << std::endl;
+	A_iblt_bits = compress_string(A_iblt_bits);
+	std::cout << "After compression Serialized iblt structure is size (bits) " << A_iblt_bits.size()*8 << std::endl;
+	A_iblt_bits = decompress_string(A_iblt_bits);
+	iblt_recreated.ParseFromString(A_iblt_bits);
+	fsync_type::iblt_type new_iblt(file_sync_B.my_rd1.iblt->num_buckets, file_sync_B.my_rd1.iblt->num_hashfns);
+	new_iblt.deserialize(iblt_recreated);
+
+	//Party B receives IBLT and 
+	file_sync_B.receive_IBLT(file2, new_iblt);
+
 	file_sync::Round2 rd2_serialized;
-	rd2_B.serialize(rd2_serialized);
+	file_sync_B.my_rd2.serialize(rd2_serialized);
 	file_sync::Round2 rd2_B_recreated;
 	std::string rd2_B_bits;
 	rd2_serialized.SerializeToString(&rd2_B_bits);
-	std::cout << "Serialized structure is size (bits) " << rd2_B_bits.size()*8 << "vs actual" << rd2_B.size_in_bits() << std::endl;
+	std::cout << "Serialized structure is size (bits) " << rd2_B_bits.size()*8 << "vs actual" << file_sync_B.my_rd2.size_in_bits() << std::endl;
 	rd2_B_bits = compress_string(rd2_B_bits);
 	std::cout << "After compression Serialized structure is size (bits) " << rd2_B_bits.size()*8 << std::endl;
 	rd2_B_bits = decompress_string(rd2_B_bits);
@@ -135,7 +154,7 @@ int main(int argc, char* argv[]) {
 
 	fsync_type::Round2Info rd2_B_2;
 	rd2_B_2.deserialize(rd2_B_recreated);
-	file_sync.reconstruct_file(file1, rd1_A, rd2_B_2);
+	file_sync_A.reconstruct_file(file1, rd2_B_2);
 
 	return 1;
 }
