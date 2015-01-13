@@ -217,7 +217,7 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
 template<typename key_type, int key_bits>
 class Field<2, key_type, key_bits> {
   public:
-    uint64_t arg = 0;
+    key_type arg = 0;
 
     Field() {
         assert( key_bits <= sizeof(uint64_t)*8);
@@ -263,18 +263,18 @@ class Field<2, key_type, key_bits> {
 template<int key_bits>
 class Field<2, std::string, key_bits> {
   public:
-    uint32_t arg[key_bits/32] = {};
+    char arg[key_bits/8] = {};
 
     Field() {}
 
     void add( const std::string& key ) {
         for(int i = 0; i < key_bits/8; ++i) {
-            arg[i/4] ^= field_add(key[i], i % 4);
+            arg[i] ^= key[i];
         }
     }
 
     void add( const Field<2, std::string, key_bits> field_elt ) {
-        for(int i = 0; i < key_bits/32; ++i) {
+        for(int i = 0; i < key_bits/8; ++i) {
             arg[i] ^= field_elt.arg[i];
         }
     }
@@ -288,11 +288,11 @@ class Field<2, std::string, key_bits> {
     }
 
     void extract_key( std::string& key) {
-        char buf[key_bits/8] = {};
-        for(int i = 0; i < key_bits/8; ++i) {
-            copy_char(buf, i);
-        }
-        key.assign(buf);
+        // char buf[key_bits/8] = {};
+        // for(int i = 0; i < key_bits/8; ++i) {
+        //     copy_char(buf, i);
+        // }
+        key.assign(arg, key_bits/8);
     }
 
     bool can_divide_by(int n) {
@@ -300,25 +300,16 @@ class Field<2, std::string, key_bits> {
     }
 
     void print_contents() const {
-        for(int i = 0; i < key_bits/32; ++i) {
-            for(int j = 0; j < 32; ++j) {
+        for(int i = 0; i < key_bits/8; ++i) {
+            for(int j = 0; j < 8; ++j) {
                 printf("%d", (arg[i] & (1 << j)) != 0);
             }
         }
         printf("\n");
     }
 
-    inline uint32_t field_add(char c, int pos) {
-        //printf("Char %c, pos %d, added %d", c, pos, c << (pos*8));
-        return( c << (pos*8) );
-    }
-
-    inline void copy_char(char* key, int i) {
-        key[i] = (arg[i/4] >> ((i%4)*8) ) & 0xFF;
-    }
-
     bool operator==( const Field<2, std::string, key_bits>& other ) const {
-        for(int i = 0; i < key_bits/32; ++i) {
+        for(int i = 0; i < key_bits/8; ++i) {
             if(arg[i] != other.arg[i]) {
                 return false;
             }
@@ -327,7 +318,7 @@ class Field<2, std::string, key_bits> {
     }
 
     bool operator<( const Field<2, std::string, key_bits>& other ) const {
-        for(int i = 0; i < key_bits/32; ++i) {
+        for(int i = 0; i < key_bits/8; ++i) {
             if(arg[i] < other.arg[i]) {
                 return true;
             }

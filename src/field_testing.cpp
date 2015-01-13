@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "basicField.hpp"
 #include "IBLT_helpers.hpp"
+#include "hash_util.hpp"
 
 void testFieldChar() {
 	std::string buffer;
@@ -16,9 +17,11 @@ void testFieldChar() {
 	printf("Adding key %s\n", key1.c_str());
 	f.add(key1);
 	f.print_contents();
+	assert( f.can_divide_by(1) );
 	if( f.can_divide_by(1) ) {
 		f.extract_key(buffer);
 		printf("Successfully extracted key: %s\n", buffer.c_str());
+		assert(key1 == buffer);
 	} else {
 		printf("Failed to extract key\n");
 	}
@@ -33,9 +36,11 @@ void testFieldChar() {
 	}
 	printf("Removing key %s\n", key1.c_str());
 	f.remove(key1);
+	assert( f.can_divide_by(1) );
 	if( f.can_divide_by(1) ) {
 		f.extract_key(buffer);
 		printf("Successfully extracted key: %s\n", buffer.c_str());
+		assert(key2 == buffer);
 	} else {
 		printf("Failed to extract key\n");
 	}
@@ -192,7 +197,30 @@ void test2FieldString() {
 	f1.add(key1);
 	f1.print_contents();
 	f1.add(key1);
+	f1.print_contents();
+
+	Field<2, std::string, 320> f2;
+	key1 = "1234567890123456789012345678901234567890";
+	printf("Adding key: %s\n", key1.c_str());
+	f2.add(key1);
+	f2.print_contents();
+	f2.add(key1);
+	f2.print_contents();
 	printf("Extracted key: %s\n", buf.c_str());
+
+	std::string shad = HashUtil::SHA1Hash(key1.c_str(), key1.size());
+	shad = shad + shad;
+	printf("Adding key: %s with length %d\n", shad.c_str(), shad.size());
+	f2.add(shad);
+	f2.print_contents();
+	std::string extracted;
+	f2.extract_key(extracted);
+	f2.add(shad);
+	f2.print_contents();
+	f2.add(extracted);
+	f2.print_contents();
+	printf("Extracted key: %s with size %d\n", extracted.c_str(), extracted.size());
+
 }
 
 int main() {
