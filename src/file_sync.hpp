@@ -54,7 +54,7 @@ class FileSynchronizer {
   	}
 
   	void create_IBLT(size_t bucket_estimate) {
-  		size_t num_buckets = bucket_estimate * 3/2;
+  		size_t num_buckets = bucket_estimate * 2;
   		size_t num_hashfns = ( bucket_estimate < 200 ) ? 3 : 4;
   		my_rd1.iblt = new iblt_type(num_buckets, num_hashfns);
 		fill_IBLT();		
@@ -66,18 +66,23 @@ class FileSynchronizer {
 		}
   	}
 
-  	void receive_IBLT(const char* filename, iblt_type& cp_IBLT) {
+  	//void receive_IBLT(const char* filename, iblt_type& cp_IBLT) {
+  	void receive_IBLT(const char* filename, iblt_type& cp_IBLT, Round1Info& cp_rd1) {
+  	
   		iblt_type resIBLT(cp_IBLT.num_buckets, cp_IBLT.num_hashfns);
 
   		resIBLT.add(*(my_rd1.iblt), 0); // my unique keys are in index 0
   		resIBLT.add(cp_IBLT, 1); // counterparty's unique keys are in index 1
   		std::unordered_map<hash_type, std::vector<int> > distinct_keys;
+  		IBLT_DEBUG("Contents before: ");
+  		resIBLT.print_contents();
   		bool res = resIBLT.peel(distinct_keys);
   		if( !res ) {
   			std::cout << "Failed to peel, need to retry" << std::endl;
   			exit(1);
   		}
-
+  		IBLT_DEBUG("Contents after: ");
+  		resIBLT.print_contents();
   		std::cout << "Peeled distinct keys" << distinct_keys.size() << std::endl;
   		// find keys that are unique to self and counterparty. Note, cannot use peeling directly
   		// because still haven't fixed problem with even number of parties
@@ -87,9 +92,11 @@ class FileSynchronizer {
   			assert( it->second.size() == 1); //only two parties for now
   			IBLT_DEBUG("Distinct key " << it->first);
   			if( my_rd1.hashes_to_poslen.find(it->first) != my_rd1.hashes_to_poslen.end() ) {
+  				assert(cp_rd1.hashes_to_poslen.find(it->first) == cp_rd1.hashes_to_poslen.end());
   				B_unique_keys.insert(it->first);
   			} else {
   				A_unique_keys.insert(it->first);
+  				assert(cp_rd1.hashes_to_poslen.find(it->first) != cp_rd1.hashes_to_poslen.end());
   			}
   		}
 
@@ -115,6 +122,19 @@ class FileSynchronizer {
 		}
 		std::sort(cp_sorted_hashes.begin(), cp_sorted_hashes.end());
 		IBLT_DEBUG("Party A has" << cp_sorted_hashes.size() << " hashes");
+
+		std::vector<hash_type> cp_actual_sorted_hashes;
+		for(auto it = cp_rd1.hashes_to_poslen.begin(); it != cp_rd1.hashes_to_poslen.end(); ++it) {
+			cp_actual_sorted_hashes.push_back(it->first);
+		}
+		std::sort(cp_actual_sorted_hashes.begin(), cp_actual_sorted_hashes.end());
+		IBLT_DEBUG("Party A actually has" << cp_actual_sorted_hashes.size() << " hashes");
+		assert(cp_sorted_hashes.size() == cp_actual_sorted_hashes.size());
+		for(size_t i = 0; i < cp_sorted_hashes.size(); ++i) {
+			if( cp_sorted_hashes[i] != cp_actual_sorted_hashes[i]) {
+				IBLT_DEBUG("We find Party A has " << cp_sorted_hashes[i] << " while actual is " << cp_actual_sorted_hashes[i]);
+			}
+		}
 
 		std::unordered_map<hash_type, size_t> cp_hash_to_index;
 		for(size_t i = 0; i < cp_sorted_hashes.size(); ++i) {

@@ -210,9 +210,9 @@ void simulateThreeParty(int num_buckets, int num_keys) {
 } 
 
 int main() {
-	const int num_buckets = 1 << 20;
-	const int num_keys = 1 << 20;
-	//simulateTwoParty<uint32_t>(num_buckets, num_keys);
+	const int num_buckets = 1 << 10;
+	const int num_keys = 1 << 11;
+	simulateTwoParty<uint32_t>(num_buckets, num_keys);
 	//simulateThreeParty<uint32_t>(num_buckets, num_keys);
 	//simulateThreeParty<std::string, 64>(num_buckets, num_keys);
 	simulateTwoParty<std::string, 320>(num_buckets, num_keys);

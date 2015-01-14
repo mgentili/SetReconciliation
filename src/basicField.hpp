@@ -31,6 +31,10 @@ class SimpleField {
         return arg;
     }
 
+    bool is_empty() const {
+        return( arg == 0);
+    }
+
     void print_contents() const {
         printf("%d\n", arg);
     }
@@ -43,6 +47,15 @@ class BaseField {
     BaseField() {
         assert( N <= (1 << sizeof(chunk_type)*8 ));
         //assert( key_bits % 8 == 0 && key_bits >= 8);
+    }
+
+    bool is_empty() const {
+        for(int i = 0; i < key_bits; ++i) {
+            if( arg[i] != 0 ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // void add( const BaseField<N, key_bits> field_elt) {
@@ -251,6 +264,10 @@ class Field<2, key_type, key_bits> {
         printf("%lu\n", arg);
     }
 
+    bool is_empty() const {
+        return (arg == 0);
+    }
+
     bool operator==( const Field<2, key_type, key_bits>& other ) const {
         return arg == other.arg;
     }
@@ -296,6 +313,15 @@ class Field<2, std::string, key_bits> {
     }
 
     bool can_divide_by(int n) {
+        return true;
+    }
+
+    bool is_empty() const {
+        for(int i = 0; i < key_bits/8; ++i) {
+            if(arg[i] != 0) {
+                return false;
+            }
+        }
         return true;
     }
 

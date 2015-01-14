@@ -77,12 +77,12 @@ class FingerprintTester {
 int main() {
 	const size_t kgrams = 8;
 	const size_t window_size = 100;
-	typedef uint64_t hash_type;
+	typedef uint32_t hash_type;
 	FingerprintTester<hash_type> ft( kgrams, window_size);
 	const char* file1 = "tmp.txt";
 	const char* file2 = "tmp2.txt";
 	double similarity = 0.999;
-	int file_len = 10000;
+	int file_len = 1000000;
 	generate_random_file(file1, file_len);
 	ft.basicTest(file1);
 	generate_similar_file(file1, file2, similarity);

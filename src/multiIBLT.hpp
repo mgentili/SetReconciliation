@@ -85,6 +85,10 @@ class multiIBLT_bucket {
 		count.print_contents();
 	}
 
+	bool is_empty() const {
+		return(key_sum.is_empty() && hash_sum.is_empty() && count.is_empty());
+	}
+
 	bool operator==( const multiIBLT_bucket& other ) const
 	{
 		return( key_sum == other.key_sum && hash_sum == other.hash_sum );
@@ -284,7 +288,6 @@ class multiIBLT {
 	bool peel(std::unordered_map<key_type, std::vector<int> >& peeled_keys ) {
 		std::deque<bucket_type> peelable_keys;
 		bucket_type curr_bucket;
-		bool has_multiple_keys;
 
 		//if we go through every entry and nothing is peelable, then we stop
 		while( true ) {
@@ -310,15 +313,26 @@ class multiIBLT {
 
 			//either every bucket has one key or more, in which case we failed,
 			//or every bucket has zero keys, in which case we succeeded;
-			if( !find_peelable_key(peelable_keys, has_multiple_keys) ) {
+			if( !find_peelable_key(peelable_keys) ) {
+				return( is_empty() );
 				//printf("Peelable keys size is %d\n", peelable_keys.size());
-				return !has_multiple_keys;
 			}
 		}
 
 		//can't reach this point
 		assert(1 == 2);
 		return false;
+	}
+
+	bool is_empty() {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				if( !subIBLTs[i][j].is_empty()) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	void filter_keys(std::unordered_map<key_type, std::vector<int> >& key_mapping,
@@ -341,17 +355,14 @@ class multiIBLT {
 
 	// returns whether was able to find peelable key
 	// stores whether during search 
-	bool find_peelable_key(std::deque<bucket_type>& peelable_keys, bool& has_multiple_keys) {
+	bool find_peelable_key(std::deque<bucket_type>& peelable_keys) {
 		bool peeled_key = false;
-		has_multiple_keys = false;
 		for(size_t i = 0; i < num_hashfns; ++i ) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
 				if( can_peel( subIBLTs[i][j] ) ) {
 					peelable_keys.emplace_back(subIBLTs[i][j]);
 					peeled_key = true;
 				}
-				if( subIBLTs[i][j].count.get_contents() != 0 )
-					has_multiple_keys = true;
 			}
 		}
 		return peeled_key;
@@ -368,41 +379,9 @@ class multiIBLT {
 			
 		}
 	}
-
-	//need to think about design decision. Use bucket type when really only need key and hash.
-	//only really need key, but for efficiency sake, want to keep hash along for the ride
-	// void peel_key(bucket_type& peelable_bucket, std::deque<bucket_type>& peelable_keys) {
-	// 	std::set<bucket_type> new_peelables;
-	// 	size_t bucket_index;
-	// 	for(size_t i = 0; i < num_hashfns; ++i) {
-	// 		key_type buf;
-	// 		peelable_bucket.key_sum.extract_key(buf);
-	// 		bucket_index = get_bucket_index(buf, i);
-	// 		// printf("Before removing:\n");
-	// 		// subIBLTs[i][bucket_index].print_contents();
-	// 		subIBLTs[i][bucket_index].remove(peelable_bucket);
-	// 		// printf("After removing:\n");
-	// 		// subIBLTs[i][bucket_index].print_contents();
-	// 		//optimization: if find a new peelable bucket, add it to queue
-	// 		//need to be careful that don't add same key twice
-	// 		if( can_peel(subIBLTs[i][bucket_index]) ) {
-	// 			//printf("Trying to peel key from other buckets\n");
-	// 			new_peelables.insert(subIBLTs[i][bucket_index]);
-	// 		}
-	// 	}
-	// 	//only insert new unique keys to the queue
-	// 	for(auto it = new_peelables.begin(); it != new_peelables.end(); ++it) {
-	// 		// if( new_peelables.size() > 1) {
-	// 		// 	printf("New peelables:\n");
-	// 		// 	(*it).print_contents();
-	// 		// }
-	// 		peelable_keys.emplace_back(*it);
-	// 	}
-	// }
 	
 	//TODO: handle case of removing non-existent keys
 	//Will need to iterate from -nparties+1 to n_parties-1 (skipping 0)
-	//TODO: malloc space for key here?
 	bool can_peel(bucket_type& curr_bucket) {
 		if( curr_bucket.count.get_contents() == 0 ) {
 			//printf("Current bucket count is: %d\n", curr_bucket.count.get_contents());
@@ -415,6 +394,7 @@ class multiIBLT {
 			if( curr_bucket.key_sum.can_divide_by( i )
 				&& curr_bucket.hash_sum.can_divide_by( i )
 				&& (size_t) curr_bucket.count.get_contents() == i ) {
+
 				curr_bucket.key_sum.extract_key(buf);
 				curr_bucket.hash_sum.extract_key(expected_hash);
 				hash_type actual_hash = key_hasher.hash(buf);
