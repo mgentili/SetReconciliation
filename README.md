@@ -15,8 +15,20 @@ To test the file synchronization protocol:
 $ ./bin/file_sync_testing [file1] [file2]
 ```
 
-Note that Google's [Protocol Buffer](https://code.google.com/p/protobuf/), which we use for (de)serialization of messages, and [zlib](http://www.zlib.net/), which we use for compression, must be installed. 
+Requirements:
+1) Google's [Protocol Buffer](https://code.google.com/p/protobuf/), which we use for (de)serialization of messages
 
+2) [zlib](http://www.zlib.net/), which we use for compression
+
+3) [openssl](https://www.openssl.org/) which we use for SHA-1 hash.
+```bash
+$ sudo apt-get install libssl-dev
+```
+
+4) [boost](http://www.boost.org/)
+```bash
+$ sudo apt-get instal libboost-all-dev
+```
 This repo also contains implementations of basic [tabluation hashing](http://people.csail.mit.edu/mip/papers/charhash/charhash.pdf), "field" arithmetic, and document fingerprinting using [winnowing](http://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf). 
 
 Each can be tested separately (refer to `Makefile` for appropriate commands).
