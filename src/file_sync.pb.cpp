@@ -175,12 +175,12 @@ void protobuf_AddDesc_file_5fsync_2eproto() {
     "\n\014chunk_exists\030\001 \003(\010B\002\020\001\022\026\n\016new_chunk_in"
     "fo\030\003 \003(\t\022#\n\027existing_chunk_encoding\030\004 \003("
     "\rB\002\020\001\"3\n\020strata_estimator\022\037\n\006strata\030\001 \003("
-    "\0132\017.file_sync.IBLT\"8\n\004IBLT\0220\n\007buckets\030\001 "
-    "\003(\0132\037.file_sync.IBLT_bucket_extended\"S\n\024"
-    "IBLT_bucket_extended\022&\n\006bucket\030\001 \002(\0132\026.f"
-    "ile_sync.IBLT_bucket\022\023\n\007has_key\030\002 \003(\010B\002\020"
-    "\001\"\?\n\013IBLT_bucket\022\017\n\007key_sum\030\001 \002(\r\022\020\n\010has"
-    "h_sum\030\002 \002(\r\022\r\n\005count\030\003 \002(\r", 386);
+    "\0132\017.file_sync.IBLT\"/\n\004IBLT\022\'\n\007buckets\030\001 "
+    "\003(\0132\026.file_sync.IBLT_bucket\"S\n\024IBLT_buck"
+    "et_extended\022&\n\006bucket\030\001 \002(\0132\026.file_sync."
+    "IBLT_bucket\022\023\n\007has_key\030\002 \003(\010B\002\020\001\"\?\n\013IBLT"
+    "_bucket\022\017\n\007key_sum\030\001 \002(\r\022\020\n\010hash_sum\030\002 \002"
+    "(\r\022\r\n\005count\030\003 \002(\r", 377);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "file_sync.proto", &protobuf_RegisterTypes);
   Round2::default_instance_ = new Round2();
@@ -850,7 +850,7 @@ bool IBLT::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+      // repeated .file_sync.IBLT_bucket buckets = 1;
       case 1: {
         if (tag == 10) {
          parse_buckets:
@@ -889,7 +889,7 @@ failure:
 void IBLT::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:file_sync.IBLT)
-  // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+  // repeated .file_sync.IBLT_bucket buckets = 1;
   for (int i = 0; i < this->buckets_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->buckets(i), output);
@@ -905,7 +905,7 @@ void IBLT::SerializeWithCachedSizes(
 ::google::protobuf::uint8* IBLT::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:file_sync.IBLT)
-  // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+  // repeated .file_sync.IBLT_bucket buckets = 1;
   for (int i = 0; i < this->buckets_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -923,7 +923,7 @@ void IBLT::SerializeWithCachedSizes(
 int IBLT::ByteSize() const {
   int total_size = 0;
 
-  // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+  // repeated .file_sync.IBLT_bucket buckets = 1;
   total_size += 1 * this->buckets_size();
   for (int i = 0; i < this->buckets_size(); i++) {
     total_size +=

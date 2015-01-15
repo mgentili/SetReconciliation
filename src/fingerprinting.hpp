@@ -11,6 +11,8 @@
 #include "hash_util.hpp"
 #include "IBLT_helpers.hpp"
 
+#define FINGERPRINT_DEBUG 1
+
 using namespace std;
 
 template <typename hash_type = uint64_t>
@@ -74,9 +76,6 @@ class RollingHash {
 
 	// once we have full k-gram, can use faster method
 	hash_type hash(hash_type curr_hash, char prevc, char newc) {
-		//std::cout << "old char: " << prevc << " new char: " << newc << "pow" << myPow(p, kgrams) << endl;  
-		//return( ((curr_hash - prevc*myPow(p, kgrams)) + newc)*p );
-		//return (curr_hash - prevc*myPow(p, kgrams-1))*p + newc;
 		return (hash_type) (curr_hash*p - prevc*myPow(p, kgrams) + newc);
 	}
 };
@@ -114,20 +113,14 @@ class Fingerprinter {
 				 * starting from r for the rightmost hash for the rightmost minimal hash. 
 				 * Note min starts with the index of the rightmost hash 
 				 */
-				//if( hashes.size() > 0) 
-				//		std::cout << "Old hash" << hashes.back().first << "pos, " << hashes.back().second;
 				for( size_t j = 1; j < w; ++j ) {
 					if( h[(r - j + w) % w] < h[min % w] ) {
-						//std::cout << "Smaller hash" << h[(r-j+w)%w] << std::endl;
 						min = r - j;
 					}
 				}
 				if( (min % w) == (r % w )) /*account for case where none smaller than new hash*/
 					min = r;
 				hashes.push_back(make_pair(h[min % w], min));
-				//std::cout << "New hash" << hashes.back().first << "pos, " << hashes.back().second << std::endl;
-
-
 			} else {
 				if( h[r % w] <= h[min % w] ) {
 					min = r;
@@ -173,21 +166,23 @@ class Fingerprinter {
 		std::pair<hash_type, size_t> curr_pair;
 		size_t i = 0;
 		size_t curr_pos = 0;
+
+#if FINGERPRINT_DEBUG
 		std::unordered_map<hash_type, std::string> hash_to_string;
+#endif
+
 		for(; i < fp_hashes.size(); ++i) {	
 			size_t curr_len = fp_hashes[i].second - curr_pos;
 
-			// std::cout << "Abs pos" << fp_hashes[i].second << " Curr len" << curr_len << " Curr pos" << curr_pos << std::endl;
 			curr_pair = make_pair(HashUtil::MurmurHash64A(&buf[curr_pos], curr_len, 0), curr_len);
+#if FINGERPRINT_DEBUG
 			std::string curr_string(&buf[curr_pos], curr_len);
 			if( hash_to_string.find(curr_pair.first) != hash_to_string.end() && hash_to_string[curr_pair.first] != curr_string) {
 				std::cout << "Uh oh, different contents have the same hash -- need to use a hash with more bytes" << std::endl;
 				exit(1);
-			// 	std::cout << hash_to_string[curr_pair.first] << " with hash " << curr_pair.first << std::endl;
-			// 	std::cout << " and " << curr_string << " with same hash" << curr_string.size() << std::endl;
-			// } else {
 				hash_to_string[curr_pair.first] = curr_string;
 			}
+#endif
 			file_hashes.push_back(curr_pair);
 			curr_pos += curr_len;
 		}

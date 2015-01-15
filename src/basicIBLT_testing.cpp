@@ -68,7 +68,7 @@ void testXOR(int seed, int num_hashfns, int num_buckets,
 		checkResults<key_type>(cp_peeled_keys, indiv_keys[1]);
 		printf("Successfully peeled\n");
 	}
-	printf("%d parties, %d shared, %d distinct keys, %d slots per IBLT\n", 
+	printf("%d parties, %d shared, %d distinct keys, %zu slots per IBLT\n", 
 			n_parties, num_shared_keys, num_distinct_keys, num_buckets);
 	for(uint i = 0; i < iblts.size(); ++i) {
 		delete iblts[i];
@@ -96,6 +96,7 @@ void simulateIBLT(int num_buckets, int num_trials, bool one_IBLT ) {
 }
 
 int main() {
-	simulateIBLT<uint32_t, uint32_t>(1 << 10, 1, false);
+	testXOR<uint32_t, uint32_t>(0, 4, 80, 5, 5);
+	//simulateIBLT<uint32_t, uint32_t>(1 << 10, 1, false);
 	//testXOR<int64_t>(0, 4, 1 << 5, 10, 10);
 }

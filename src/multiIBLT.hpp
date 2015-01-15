@@ -222,6 +222,7 @@ class multiIBLT {
 	size_t size_in_bits() {
 		return( num_buckets * subIBLTs[0][0].size_in_bits() );
 	}
+	
 	void serialize(file_sync::IBLT& iblt_serialized) {
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {

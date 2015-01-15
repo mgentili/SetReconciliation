@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include "hash_util.hpp"
+#include "file_sync.pb.h"
+
 //--IBLT STUFF
 
 //structure of a bucket within an IBLT
@@ -32,6 +34,10 @@ class basicIBLT_bucket {
 		count += n_times;
 	}
 
+	void add(const basicIBLT_bucket<key_type, hash_type>& b) {
+		add(b.key_sum, b.hash_sum, b.count);
+	}
+
 	void add(key_type k, hash_type h) {
 		add(k, h, 1);
 	}
@@ -49,7 +55,9 @@ class basicIBLT_bucket {
 	}
 
 	void print_contents() const {
-		printf("key_sum: %ld, hash_sum: %ld, count: %d\n", key_sum, hash_sum, count);
+		std::cout << "key_sum: " << key_sum <<
+					 ", hash_sum: " << hash_sum << 
+					 ", count: " << count << std::endl;
 	}
 
 	bool is_empty() const {
@@ -64,6 +72,18 @@ class basicIBLT_bucket {
     bool operator<( const basicIBLT_bucket& other ) const 
 	{
 		return( key_sum < other.key_sum || hash_sum < other.hash_sum );
+	}
+
+	void serialize(file_sync::IBLT_bucket& bucket) {
+		bucket.set_key_sum(key_sum);
+		bucket.set_hash_sum(hash_sum);
+		bucket.set_count(count);
+	}
+
+	void deserialize(const file_sync::IBLT_bucket& bucket) {
+		key_sum = bucket.key_sum();
+		hash_sum = bucket.hash_sum();
+		count = bucket.count();
 	}
 };
 
@@ -106,6 +126,37 @@ class basicIBLT {
 
 	size_t size_in_bits() const {
 		return( num_buckets * bucket_type::size_in_bits());
+	}
+
+	void serialize(file_sync::IBLT& iblt) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				file_sync::IBLT_bucket* new_bucket = iblt.add_buckets();
+				subIBLTs[i][j].serialize(*new_bucket); 
+			}
+		}
+	}
+
+	void deserialize(const file_sync::IBLT& iblt) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				subIBLTs[i][j].deserialize(iblt.buckets(i*buckets_per_subIBLT + j));
+			}
+		}
+	}
+
+	void add(const basicIBLT<key_type, hash_type>& counterparty) {
+		assert( counterparty.buckets_per_subIBLT == buckets_per_subIBLT 
+			&&  counterparty.num_hashfns == num_hashfns);
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				subIBLTs[i][j].add( counterparty.subIBLTs[i][j] );
+			}
+		}
+	}
+
+	void remove(const basicIBLT<key_type, hash_type>& counterparty) {
+		XOR(counterparty);
 	}
 
 	void XOR(const basicIBLT<key_type, hash_type>& counterparty) {
@@ -171,6 +222,8 @@ class basicIBLT {
 			//either every bucket has one key or more, in which case we failed,
 			//or every bucket has zero keys, in which case we succeeded;
 			if( !find_peelable_key(peelable_keys) ) {
+				// if( !is_empty() )
+				// 	print_contents();
 				return( is_empty() );
 			}
 		}
@@ -186,7 +239,7 @@ class basicIBLT {
 		std::unordered_set<key_type> my_peeled_keys, cp_peeled_keys;
 		bool res = peel(my_peeled_keys, cp_peeled_keys);
 		if( !res ) {
-			std::cout << "Failed to peel" << std::endl;
+			// std::cout << "Failed to peel" << std::endl;
 			return false;
 		}
 

@@ -290,16 +290,16 @@ class IBLT : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated .file_sync.IBLT_bucket_extended buckets = 1;
+  // repeated .file_sync.IBLT_bucket buckets = 1;
   inline int buckets_size() const;
   inline void clear_buckets();
   static const int kBucketsFieldNumber = 1;
-  inline const ::file_sync::IBLT_bucket_extended& buckets(int index) const;
-  inline ::file_sync::IBLT_bucket_extended* mutable_buckets(int index);
-  inline ::file_sync::IBLT_bucket_extended* add_buckets();
-  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >&
+  inline const ::file_sync::IBLT_bucket& buckets(int index) const;
+  inline ::file_sync::IBLT_bucket* mutable_buckets(int index);
+  inline ::file_sync::IBLT_bucket* add_buckets();
+  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket >&
       buckets() const;
-  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >*
+  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket >*
       mutable_buckets();
 
   // @@protoc_insertion_point(class_scope:file_sync.IBLT)
@@ -309,7 +309,7 @@ class IBLT : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended > buckets_;
+  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket > buckets_;
   friend void  protobuf_AddDesc_file_5fsync_2eproto();
   friend void protobuf_AssignDesc_file_5fsync_2eproto();
   friend void protobuf_ShutdownFile_file_5fsync_2eproto();
@@ -670,31 +670,31 @@ strata_estimator::mutable_strata() {
 
 // IBLT
 
-// repeated .file_sync.IBLT_bucket_extended buckets = 1;
+// repeated .file_sync.IBLT_bucket buckets = 1;
 inline int IBLT::buckets_size() const {
   return buckets_.size();
 }
 inline void IBLT::clear_buckets() {
   buckets_.Clear();
 }
-inline const ::file_sync::IBLT_bucket_extended& IBLT::buckets(int index) const {
+inline const ::file_sync::IBLT_bucket& IBLT::buckets(int index) const {
   // @@protoc_insertion_point(field_get:file_sync.IBLT.buckets)
   return buckets_.Get(index);
 }
-inline ::file_sync::IBLT_bucket_extended* IBLT::mutable_buckets(int index) {
+inline ::file_sync::IBLT_bucket* IBLT::mutable_buckets(int index) {
   // @@protoc_insertion_point(field_mutable:file_sync.IBLT.buckets)
   return buckets_.Mutable(index);
 }
-inline ::file_sync::IBLT_bucket_extended* IBLT::add_buckets() {
+inline ::file_sync::IBLT_bucket* IBLT::add_buckets() {
   // @@protoc_insertion_point(field_add:file_sync.IBLT.buckets)
   return buckets_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >&
+inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket >&
 IBLT::buckets() const {
   // @@protoc_insertion_point(field_list:file_sync.IBLT.buckets)
   return buckets_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket_extended >*
+inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket >*
 IBLT::mutable_buckets() {
   // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT.buckets)
   return &buckets_;

@@ -29,7 +29,7 @@ STRATA=bin/strata_testing
 DIR_SYNC=bin/dir_sync_testing
 PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC)
 
-.PHONY: default all tabulation basic_ibltmulti_iblt field fingerprint sync strata dir_sync
+.PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata dir_sync
 default: all
 all: $(PROGRAMS)
 tabulation: $(TABULATION)

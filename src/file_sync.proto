@@ -11,7 +11,8 @@ message strata_estimator {
 }
 
 message IBLT {
-	repeated IBLT_bucket_extended buckets = 1;
+//	repeated IBLT_bucket_extended buckets = 1;
+	repeated IBLT_bucket buckets = 1;
 }
 
 message IBLT_bucket_extended {
