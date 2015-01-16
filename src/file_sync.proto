@@ -2,17 +2,23 @@ package file_sync;
 
 message Round2 {
 	repeated bool chunk_exists = 1 [packed=true]; //for each chunk server has, whether client has
-	repeated string new_chunk_info = 3 ; //contents of each chunk that client doesn't have
+	repeated bytes new_chunk_info = 3 ; //contents of each chunk that client doesn't have
 	repeated uint32 existing_chunk_encoding = 4 [packed=true];
 }
 
 message strata_estimator {
-	repeated IBLT strata = 1;
+	repeated IBLT2 strata = 1;
 }
 
 message IBLT {
 //	repeated IBLT_bucket_extended buckets = 1;
 	repeated IBLT_bucket buckets = 1;
+}
+
+message IBLT2 {
+	repeated uint64 key_sum = 1 [packed=true];
+	repeated uint64 hash_sum = 2 [packed=true];
+	repeated uint64 count = 3 [packed=true];
 }
 
 message IBLT_bucket_extended {

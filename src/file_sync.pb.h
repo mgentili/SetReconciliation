@@ -36,6 +36,7 @@ void protobuf_ShutdownFile_file_5fsync_2eproto();
 class Round2;
 class strata_estimator;
 class IBLT;
+class IBLT2;
 class IBLT_bucket_extended;
 class IBLT_bucket;
 
@@ -106,7 +107,7 @@ class Round2 : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< bool >*
       mutable_chunk_exists();
 
-  // repeated string new_chunk_info = 3;
+  // repeated bytes new_chunk_info = 3;
   inline int new_chunk_info_size() const;
   inline void clear_new_chunk_info();
   static const int kNewChunkInfoFieldNumber = 3;
@@ -114,11 +115,11 @@ class Round2 : public ::google::protobuf::Message {
   inline ::std::string* mutable_new_chunk_info(int index);
   inline void set_new_chunk_info(int index, const ::std::string& value);
   inline void set_new_chunk_info(int index, const char* value);
-  inline void set_new_chunk_info(int index, const char* value, size_t size);
+  inline void set_new_chunk_info(int index, const void* value, size_t size);
   inline ::std::string* add_new_chunk_info();
   inline void add_new_chunk_info(const ::std::string& value);
   inline void add_new_chunk_info(const char* value);
-  inline void add_new_chunk_info(const char* value, size_t size);
+  inline void add_new_chunk_info(const void* value, size_t size);
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& new_chunk_info() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_new_chunk_info();
 
@@ -208,16 +209,16 @@ class strata_estimator : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated .file_sync.IBLT strata = 1;
+  // repeated .file_sync.IBLT2 strata = 1;
   inline int strata_size() const;
   inline void clear_strata();
   static const int kStrataFieldNumber = 1;
-  inline const ::file_sync::IBLT& strata(int index) const;
-  inline ::file_sync::IBLT* mutable_strata(int index);
-  inline ::file_sync::IBLT* add_strata();
-  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >&
+  inline const ::file_sync::IBLT2& strata(int index) const;
+  inline ::file_sync::IBLT2* mutable_strata(int index);
+  inline ::file_sync::IBLT2* add_strata();
+  inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT2 >&
       strata() const;
-  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >*
+  inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT2 >*
       mutable_strata();
 
   // @@protoc_insertion_point(class_scope:file_sync.strata_estimator)
@@ -227,7 +228,7 @@ class strata_estimator : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT > strata_;
+  ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT2 > strata_;
   friend void  protobuf_AddDesc_file_5fsync_2eproto();
   friend void protobuf_AssignDesc_file_5fsync_2eproto();
   friend void protobuf_ShutdownFile_file_5fsync_2eproto();
@@ -316,6 +317,117 @@ class IBLT : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static IBLT* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IBLT2 : public ::google::protobuf::Message {
+ public:
+  IBLT2();
+  virtual ~IBLT2();
+
+  IBLT2(const IBLT2& from);
+
+  inline IBLT2& operator=(const IBLT2& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IBLT2& default_instance();
+
+  void Swap(IBLT2* other);
+
+  // implements Message ----------------------------------------------
+
+  IBLT2* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IBLT2& from);
+  void MergeFrom(const IBLT2& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 key_sum = 1 [packed = true];
+  inline int key_sum_size() const;
+  inline void clear_key_sum();
+  static const int kKeySumFieldNumber = 1;
+  inline ::google::protobuf::uint64 key_sum(int index) const;
+  inline void set_key_sum(int index, ::google::protobuf::uint64 value);
+  inline void add_key_sum(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      key_sum() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_key_sum();
+
+  // repeated uint64 hash_sum = 2 [packed = true];
+  inline int hash_sum_size() const;
+  inline void clear_hash_sum();
+  static const int kHashSumFieldNumber = 2;
+  inline ::google::protobuf::uint64 hash_sum(int index) const;
+  inline void set_hash_sum(int index, ::google::protobuf::uint64 value);
+  inline void add_hash_sum(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      hash_sum() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_hash_sum();
+
+  // repeated uint64 count = 3 [packed = true];
+  inline int count_size() const;
+  inline void clear_count();
+  static const int kCountFieldNumber = 3;
+  inline ::google::protobuf::uint64 count(int index) const;
+  inline void set_count(int index, ::google::protobuf::uint64 value);
+  inline void add_count(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      count() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_count();
+
+  // @@protoc_insertion_point(class_scope:file_sync.IBLT2)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > key_sum_;
+  mutable int _key_sum_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > hash_sum_;
+  mutable int _hash_sum_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > count_;
+  mutable int _count_cached_byte_size_;
+  friend void  protobuf_AddDesc_file_5fsync_2eproto();
+  friend void protobuf_AssignDesc_file_5fsync_2eproto();
+  friend void protobuf_ShutdownFile_file_5fsync_2eproto();
+
+  void InitAsDefaultInstance();
+  static IBLT2* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -548,7 +660,7 @@ Round2::mutable_chunk_exists() {
   return &chunk_exists_;
 }
 
-// repeated string new_chunk_info = 3;
+// repeated bytes new_chunk_info = 3;
 inline int Round2::new_chunk_info_size() const {
   return new_chunk_info_.size();
 }
@@ -571,7 +683,7 @@ inline void Round2::set_new_chunk_info(int index, const char* value) {
   new_chunk_info_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:file_sync.Round2.new_chunk_info)
 }
-inline void Round2::set_new_chunk_info(int index, const char* value, size_t size) {
+inline void Round2::set_new_chunk_info(int index, const void* value, size_t size) {
   new_chunk_info_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:file_sync.Round2.new_chunk_info)
@@ -587,7 +699,7 @@ inline void Round2::add_new_chunk_info(const char* value) {
   new_chunk_info_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:file_sync.Round2.new_chunk_info)
 }
-inline void Round2::add_new_chunk_info(const char* value, size_t size) {
+inline void Round2::add_new_chunk_info(const void* value, size_t size) {
   new_chunk_info_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:file_sync.Round2.new_chunk_info)
 }
@@ -636,31 +748,31 @@ Round2::mutable_existing_chunk_encoding() {
 
 // strata_estimator
 
-// repeated .file_sync.IBLT strata = 1;
+// repeated .file_sync.IBLT2 strata = 1;
 inline int strata_estimator::strata_size() const {
   return strata_.size();
 }
 inline void strata_estimator::clear_strata() {
   strata_.Clear();
 }
-inline const ::file_sync::IBLT& strata_estimator::strata(int index) const {
+inline const ::file_sync::IBLT2& strata_estimator::strata(int index) const {
   // @@protoc_insertion_point(field_get:file_sync.strata_estimator.strata)
   return strata_.Get(index);
 }
-inline ::file_sync::IBLT* strata_estimator::mutable_strata(int index) {
+inline ::file_sync::IBLT2* strata_estimator::mutable_strata(int index) {
   // @@protoc_insertion_point(field_mutable:file_sync.strata_estimator.strata)
   return strata_.Mutable(index);
 }
-inline ::file_sync::IBLT* strata_estimator::add_strata() {
+inline ::file_sync::IBLT2* strata_estimator::add_strata() {
   // @@protoc_insertion_point(field_add:file_sync.strata_estimator.strata)
   return strata_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >&
+inline const ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT2 >&
 strata_estimator::strata() const {
   // @@protoc_insertion_point(field_list:file_sync.strata_estimator.strata)
   return strata_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT >*
+inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT2 >*
 strata_estimator::mutable_strata() {
   // @@protoc_insertion_point(field_mutable_list:file_sync.strata_estimator.strata)
   return &strata_;
@@ -698,6 +810,100 @@ inline ::google::protobuf::RepeatedPtrField< ::file_sync::IBLT_bucket >*
 IBLT::mutable_buckets() {
   // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT.buckets)
   return &buckets_;
+}
+
+// -------------------------------------------------------------------
+
+// IBLT2
+
+// repeated uint64 key_sum = 1 [packed = true];
+inline int IBLT2::key_sum_size() const {
+  return key_sum_.size();
+}
+inline void IBLT2::clear_key_sum() {
+  key_sum_.Clear();
+}
+inline ::google::protobuf::uint64 IBLT2::key_sum(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT2.key_sum)
+  return key_sum_.Get(index);
+}
+inline void IBLT2::set_key_sum(int index, ::google::protobuf::uint64 value) {
+  key_sum_.Set(index, value);
+  // @@protoc_insertion_point(field_set:file_sync.IBLT2.key_sum)
+}
+inline void IBLT2::add_key_sum(::google::protobuf::uint64 value) {
+  key_sum_.Add(value);
+  // @@protoc_insertion_point(field_add:file_sync.IBLT2.key_sum)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+IBLT2::key_sum() const {
+  // @@protoc_insertion_point(field_list:file_sync.IBLT2.key_sum)
+  return key_sum_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+IBLT2::mutable_key_sum() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT2.key_sum)
+  return &key_sum_;
+}
+
+// repeated uint64 hash_sum = 2 [packed = true];
+inline int IBLT2::hash_sum_size() const {
+  return hash_sum_.size();
+}
+inline void IBLT2::clear_hash_sum() {
+  hash_sum_.Clear();
+}
+inline ::google::protobuf::uint64 IBLT2::hash_sum(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT2.hash_sum)
+  return hash_sum_.Get(index);
+}
+inline void IBLT2::set_hash_sum(int index, ::google::protobuf::uint64 value) {
+  hash_sum_.Set(index, value);
+  // @@protoc_insertion_point(field_set:file_sync.IBLT2.hash_sum)
+}
+inline void IBLT2::add_hash_sum(::google::protobuf::uint64 value) {
+  hash_sum_.Add(value);
+  // @@protoc_insertion_point(field_add:file_sync.IBLT2.hash_sum)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+IBLT2::hash_sum() const {
+  // @@protoc_insertion_point(field_list:file_sync.IBLT2.hash_sum)
+  return hash_sum_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+IBLT2::mutable_hash_sum() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT2.hash_sum)
+  return &hash_sum_;
+}
+
+// repeated uint64 count = 3 [packed = true];
+inline int IBLT2::count_size() const {
+  return count_.size();
+}
+inline void IBLT2::clear_count() {
+  count_.Clear();
+}
+inline ::google::protobuf::uint64 IBLT2::count(int index) const {
+  // @@protoc_insertion_point(field_get:file_sync.IBLT2.count)
+  return count_.Get(index);
+}
+inline void IBLT2::set_count(int index, ::google::protobuf::uint64 value) {
+  count_.Set(index, value);
+  // @@protoc_insertion_point(field_set:file_sync.IBLT2.count)
+}
+inline void IBLT2::add_count(::google::protobuf::uint64 value) {
+  count_.Add(value);
+  // @@protoc_insertion_point(field_add:file_sync.IBLT2.count)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+IBLT2::count() const {
+  // @@protoc_insertion_point(field_list:file_sync.IBLT2.count)
+  return count_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+IBLT2::mutable_count() {
+  // @@protoc_insertion_point(field_mutable_list:file_sync.IBLT2.count)
+  return &count_;
 }
 
 // -------------------------------------------------------------------

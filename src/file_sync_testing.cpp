@@ -1,10 +1,10 @@
 #include "IBLT_helpers.hpp"
 #include "file_sync.hpp"
 #include "file_sync.pb.h"
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 void testFullProtocol(const char* file1, const char* file2) {
-	typedef uint32_t hash_type;
+	typedef uint64_t hash_type;
 	typedef FileSynchronizer<hash_type> fsync_type;
 
 	GOOGLE_PROTOBUF_VERIFY_VERSION;

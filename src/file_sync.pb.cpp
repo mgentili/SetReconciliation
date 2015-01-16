@@ -29,6 +29,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* IBLT_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   IBLT_reflection_ = NULL;
+const ::google::protobuf::Descriptor* IBLT2_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  IBLT2_reflection_ = NULL;
 const ::google::protobuf::Descriptor* IBLT_bucket_extended_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   IBLT_bucket_extended_reflection_ = NULL;
@@ -92,7 +95,24 @@ void protobuf_AssignDesc_file_5fsync_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(IBLT));
-  IBLT_bucket_extended_descriptor_ = file->message_type(3);
+  IBLT2_descriptor_ = file->message_type(3);
+  static const int IBLT2_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT2, key_sum_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT2, hash_sum_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT2, count_),
+  };
+  IBLT2_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      IBLT2_descriptor_,
+      IBLT2::default_instance_,
+      IBLT2_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT2, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT2, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(IBLT2));
+  IBLT_bucket_extended_descriptor_ = file->message_type(4);
   static const int IBLT_bucket_extended_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT_bucket_extended, bucket_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT_bucket_extended, has_key_),
@@ -108,7 +128,7 @@ void protobuf_AssignDesc_file_5fsync_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(IBLT_bucket_extended));
-  IBLT_bucket_descriptor_ = file->message_type(4);
+  IBLT_bucket_descriptor_ = file->message_type(5);
   static const int IBLT_bucket_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT_bucket, key_sum_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(IBLT_bucket, hash_sum_),
@@ -144,6 +164,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     IBLT_descriptor_, &IBLT::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    IBLT2_descriptor_, &IBLT2::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     IBLT_bucket_extended_descriptor_, &IBLT_bucket_extended::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     IBLT_bucket_descriptor_, &IBLT_bucket::default_instance());
@@ -158,6 +180,8 @@ void protobuf_ShutdownFile_file_5fsync_2eproto() {
   delete strata_estimator_reflection_;
   delete IBLT::default_instance_;
   delete IBLT_reflection_;
+  delete IBLT2::default_instance_;
+  delete IBLT2_reflection_;
   delete IBLT_bucket_extended::default_instance_;
   delete IBLT_bucket_extended_reflection_;
   delete IBLT_bucket::default_instance_;
@@ -173,24 +197,28 @@ void protobuf_AddDesc_file_5fsync_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\017file_sync.proto\022\tfile_sync\"_\n\006Round2\022\030"
     "\n\014chunk_exists\030\001 \003(\010B\002\020\001\022\026\n\016new_chunk_in"
-    "fo\030\003 \003(\t\022#\n\027existing_chunk_encoding\030\004 \003("
-    "\rB\002\020\001\"3\n\020strata_estimator\022\037\n\006strata\030\001 \003("
-    "\0132\017.file_sync.IBLT\"/\n\004IBLT\022\'\n\007buckets\030\001 "
-    "\003(\0132\026.file_sync.IBLT_bucket\"S\n\024IBLT_buck"
-    "et_extended\022&\n\006bucket\030\001 \002(\0132\026.file_sync."
-    "IBLT_bucket\022\023\n\007has_key\030\002 \003(\010B\002\020\001\"\?\n\013IBLT"
-    "_bucket\022\017\n\007key_sum\030\001 \002(\r\022\020\n\010hash_sum\030\002 \002"
-    "(\r\022\r\n\005count\030\003 \002(\r", 377);
+    "fo\030\003 \003(\014\022#\n\027existing_chunk_encoding\030\004 \003("
+    "\rB\002\020\001\"4\n\020strata_estimator\022 \n\006strata\030\001 \003("
+    "\0132\020.file_sync.IBLT2\"/\n\004IBLT\022\'\n\007buckets\030\001"
+    " \003(\0132\026.file_sync.IBLT_bucket\"E\n\005IBLT2\022\023\n"
+    "\007key_sum\030\001 \003(\004B\002\020\001\022\024\n\010hash_sum\030\002 \003(\004B\002\020\001"
+    "\022\021\n\005count\030\003 \003(\004B\002\020\001\"S\n\024IBLT_bucket_exten"
+    "ded\022&\n\006bucket\030\001 \002(\0132\026.file_sync.IBLT_buc"
+    "ket\022\023\n\007has_key\030\002 \003(\010B\002\020\001\"\?\n\013IBLT_bucket\022"
+    "\017\n\007key_sum\030\001 \002(\r\022\020\n\010hash_sum\030\002 \002(\r\022\r\n\005co"
+    "unt\030\003 \002(\r", 449);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "file_sync.proto", &protobuf_RegisterTypes);
   Round2::default_instance_ = new Round2();
   strata_estimator::default_instance_ = new strata_estimator();
   IBLT::default_instance_ = new IBLT();
+  IBLT2::default_instance_ = new IBLT2();
   IBLT_bucket_extended::default_instance_ = new IBLT_bucket_extended();
   IBLT_bucket::default_instance_ = new IBLT_bucket();
   Round2::default_instance_->InitAsDefaultInstance();
   strata_estimator::default_instance_->InitAsDefaultInstance();
   IBLT::default_instance_->InitAsDefaultInstance();
+  IBLT2::default_instance_->InitAsDefaultInstance();
   IBLT_bucket_extended::default_instance_->InitAsDefaultInstance();
   IBLT_bucket::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_file_5fsync_2eproto);
@@ -299,17 +327,12 @@ bool Round2::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string new_chunk_info = 3;
+      // repeated bytes new_chunk_info = 3;
       case 3: {
         if (tag == 26) {
          parse_new_chunk_info:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->add_new_chunk_info()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->new_chunk_info(this->new_chunk_info_size() - 1).data(),
-            this->new_chunk_info(this->new_chunk_info_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "new_chunk_info");
         } else {
           goto handle_unusual;
         }
@@ -371,13 +394,9 @@ void Round2::SerializeWithCachedSizes(
       this->chunk_exists(i), output);
   }
 
-  // repeated string new_chunk_info = 3;
+  // repeated bytes new_chunk_info = 3;
   for (int i = 0; i < this->new_chunk_info_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->new_chunk_info(i).data(), this->new_chunk_info(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "new_chunk_info");
-    ::google::protobuf::internal::WireFormatLite::WriteString(
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
       3, this->new_chunk_info(i), output);
   }
 
@@ -415,14 +434,10 @@ void Round2::SerializeWithCachedSizes(
       WriteBoolNoTagToArray(this->chunk_exists(i), target);
   }
 
-  // repeated string new_chunk_info = 3;
+  // repeated bytes new_chunk_info = 3;
   for (int i = 0; i < this->new_chunk_info_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->new_chunk_info(i).data(), this->new_chunk_info(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "new_chunk_info");
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(3, this->new_chunk_info(i), target);
+      WriteBytesToArray(3, this->new_chunk_info(i), target);
   }
 
   // repeated uint32 existing_chunk_encoding = 4 [packed = true];
@@ -464,10 +479,10 @@ int Round2::ByteSize() const {
     total_size += data_size;
   }
 
-  // repeated string new_chunk_info = 3;
+  // repeated bytes new_chunk_info = 3;
   total_size += 1 * this->new_chunk_info_size();
   for (int i = 0; i < this->new_chunk_info_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
       this->new_chunk_info(i));
   }
 
@@ -630,7 +645,7 @@ bool strata_estimator::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .file_sync.IBLT strata = 1;
+      // repeated .file_sync.IBLT2 strata = 1;
       case 1: {
         if (tag == 10) {
          parse_strata:
@@ -669,7 +684,7 @@ failure:
 void strata_estimator::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:file_sync.strata_estimator)
-  // repeated .file_sync.IBLT strata = 1;
+  // repeated .file_sync.IBLT2 strata = 1;
   for (int i = 0; i < this->strata_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->strata(i), output);
@@ -685,7 +700,7 @@ void strata_estimator::SerializeWithCachedSizes(
 ::google::protobuf::uint8* strata_estimator::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:file_sync.strata_estimator)
-  // repeated .file_sync.IBLT strata = 1;
+  // repeated .file_sync.IBLT2 strata = 1;
   for (int i = 0; i < this->strata_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -703,7 +718,7 @@ void strata_estimator::SerializeWithCachedSizes(
 int strata_estimator::ByteSize() const {
   int total_size = 0;
 
-  // repeated .file_sync.IBLT strata = 1;
+  // repeated .file_sync.IBLT2 strata = 1;
   total_size += 1 * this->strata_size();
   for (int i = 0; i < this->strata_size(); i++) {
     total_size +=
@@ -754,7 +769,6 @@ void strata_estimator::CopyFrom(const strata_estimator& from) {
 
 bool strata_estimator::IsInitialized() const {
 
-  if (!::google::protobuf::internal::AllAreInitialized(this->strata())) return false;
   return true;
 }
 
@@ -992,6 +1006,374 @@ void IBLT::Swap(IBLT* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = IBLT_descriptor_;
   metadata.reflection = IBLT_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int IBLT2::kKeySumFieldNumber;
+const int IBLT2::kHashSumFieldNumber;
+const int IBLT2::kCountFieldNumber;
+#endif  // !_MSC_VER
+
+IBLT2::IBLT2()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:file_sync.IBLT2)
+}
+
+void IBLT2::InitAsDefaultInstance() {
+}
+
+IBLT2::IBLT2(const IBLT2& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:file_sync.IBLT2)
+}
+
+void IBLT2::SharedCtor() {
+  _cached_size_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+IBLT2::~IBLT2() {
+  // @@protoc_insertion_point(destructor:file_sync.IBLT2)
+  SharedDtor();
+}
+
+void IBLT2::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void IBLT2::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* IBLT2::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return IBLT2_descriptor_;
+}
+
+const IBLT2& IBLT2::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_file_5fsync_2eproto();
+  return *default_instance_;
+}
+
+IBLT2* IBLT2::default_instance_ = NULL;
+
+IBLT2* IBLT2::New() const {
+  return new IBLT2;
+}
+
+void IBLT2::Clear() {
+  key_sum_.Clear();
+  hash_sum_.Clear();
+  count_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool IBLT2::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:file_sync.IBLT2)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated uint64 key_sum = 1 [packed = true];
+      case 1: {
+        if (tag == 10) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_key_sum())));
+        } else if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 10, input, this->mutable_key_sum())));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_hash_sum;
+        break;
+      }
+
+      // repeated uint64 hash_sum = 2 [packed = true];
+      case 2: {
+        if (tag == 18) {
+         parse_hash_sum:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_hash_sum())));
+        } else if (tag == 16) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 18, input, this->mutable_hash_sum())));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_count;
+        break;
+      }
+
+      // repeated uint64 count = 3 [packed = true];
+      case 3: {
+        if (tag == 26) {
+         parse_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_count())));
+        } else if (tag == 24) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 26, input, this->mutable_count())));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:file_sync.IBLT2)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:file_sync.IBLT2)
+  return false;
+#undef DO_
+}
+
+void IBLT2::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:file_sync.IBLT2)
+  // repeated uint64 key_sum = 1 [packed = true];
+  if (this->key_sum_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_key_sum_cached_byte_size_);
+  }
+  for (int i = 0; i < this->key_sum_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
+      this->key_sum(i), output);
+  }
+
+  // repeated uint64 hash_sum = 2 [packed = true];
+  if (this->hash_sum_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_hash_sum_cached_byte_size_);
+  }
+  for (int i = 0; i < this->hash_sum_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
+      this->hash_sum(i), output);
+  }
+
+  // repeated uint64 count = 3 [packed = true];
+  if (this->count_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_count_cached_byte_size_);
+  }
+  for (int i = 0; i < this->count_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
+      this->count(i), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:file_sync.IBLT2)
+}
+
+::google::protobuf::uint8* IBLT2::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:file_sync.IBLT2)
+  // repeated uint64 key_sum = 1 [packed = true];
+  if (this->key_sum_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      1,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _key_sum_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->key_sum_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt64NoTagToArray(this->key_sum(i), target);
+  }
+
+  // repeated uint64 hash_sum = 2 [packed = true];
+  if (this->hash_sum_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      2,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _hash_sum_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->hash_sum_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt64NoTagToArray(this->hash_sum(i), target);
+  }
+
+  // repeated uint64 count = 3 [packed = true];
+  if (this->count_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      3,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _count_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->count_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt64NoTagToArray(this->count(i), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:file_sync.IBLT2)
+  return target;
+}
+
+int IBLT2::ByteSize() const {
+  int total_size = 0;
+
+  // repeated uint64 key_sum = 1 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->key_sum_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt64Size(this->key_sum(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _key_sum_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
+  // repeated uint64 hash_sum = 2 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->hash_sum_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt64Size(this->hash_sum(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _hash_sum_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
+  // repeated uint64 count = 3 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->count_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt64Size(this->count(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _count_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void IBLT2::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const IBLT2* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const IBLT2*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void IBLT2::MergeFrom(const IBLT2& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  key_sum_.MergeFrom(from.key_sum_);
+  hash_sum_.MergeFrom(from.hash_sum_);
+  count_.MergeFrom(from.count_);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void IBLT2::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void IBLT2::CopyFrom(const IBLT2& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool IBLT2::IsInitialized() const {
+
+  return true;
+}
+
+void IBLT2::Swap(IBLT2* other) {
+  if (other != this) {
+    key_sum_.Swap(&other->key_sum_);
+    hash_sum_.Swap(&other->hash_sum_);
+    count_.Swap(&other->count_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata IBLT2::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = IBLT2_descriptor_;
+  metadata.reflection = IBLT2_reflection_;
   return metadata;
 }
 

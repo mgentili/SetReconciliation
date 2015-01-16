@@ -179,9 +179,11 @@ class Fingerprinter {
 			std::string curr_string(&buf[curr_pos], curr_len);
 			if( hash_to_string.find(curr_pair.first) != hash_to_string.end() && hash_to_string[curr_pair.first] != curr_string) {
 				std::cout << "Uh oh, different contents have the same hash -- need to use a hash with more bytes" << std::endl;
+				std::cout << "Same hash for " << curr_string << " and " << hash_to_string[curr_pair.first] << std::endl;
 				exit(1);
-				hash_to_string[curr_pair.first] = curr_string;
+
 			}
+			hash_to_string[curr_pair.first] = curr_string;
 #endif
 			file_hashes.push_back(curr_pair);
 			curr_pos += curr_len;

@@ -25,7 +25,7 @@ class basicIBLT_bucket {
 	basicIBLT_bucket(): key_sum(0), hash_sum(0), count(0) {}
 
 	static size_t size_in_bits() {
-		return( sizeof(key_type)*8 + sizeof(hash_type)*8 + sizeof(count) );
+		return( sizeof(key_type)*8 + sizeof(hash_type)*8 + sizeof(count)*8 );
 	}
 
 	void add(key_type k, hash_type h, int n_times) {
@@ -136,7 +136,17 @@ class basicIBLT {
 			}
 		}
 	}
-
+	
+	void serialize(file_sync::IBLT2& iblt) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				iblt.add_key_sum(subIBLTs[i][j].key_sum);
+				iblt.add_hash_sum(subIBLTs[i][j].hash_sum);
+				iblt.add_count(subIBLTs[i][j].count);
+			}
+		}
+	}
+	
 	void deserialize(const file_sync::IBLT& iblt) {
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
@@ -144,6 +154,16 @@ class basicIBLT {
 			}
 		}
 	}
+
+	void deserialize(const file_sync::IBLT2& iblt) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				size_t index = i*buckets_per_subIBLT + j;
+				subIBLTs[i][j].add(iblt.key_sum(index), iblt.hash_sum(index), iblt.count(index));
+			}
+		}
+	}
+
 
 	void add(const basicIBLT<key_type, hash_type>& counterparty) {
 		assert( counterparty.buckets_per_subIBLT == buckets_per_subIBLT 
@@ -238,11 +258,6 @@ class basicIBLT {
 	bool peel(std::unordered_set<key_type>& peeled_keys ) {
 		std::unordered_set<key_type> my_peeled_keys, cp_peeled_keys;
 		bool res = peel(my_peeled_keys, cp_peeled_keys);
-		if( !res ) {
-			// std::cout << "Failed to peel" << std::endl;
-			return false;
-		}
-
 		for(auto it = my_peeled_keys.begin(); it != my_peeled_keys.end(); ++it) {
 			peeled_keys.insert(*it);
 		}
@@ -250,7 +265,8 @@ class basicIBLT {
 		for(auto it = cp_peeled_keys.begin(); it != cp_peeled_keys.end(); ++it) {
 			peeled_keys.insert(*it);
 		}
-		return true;
+
+		return res;
 	}
 
 	bool find_peelable_key(std::deque<bucket_type>& peelable_keys) {

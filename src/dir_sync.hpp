@@ -18,7 +18,7 @@ class dir_sync {
   	static const size_t n_parties = 2;
   	typedef uint32_t hash_type;
   	typedef multiIBLT<n_parties, std::string, 40*8> iblt_type;
-  	typedef StrataEstimator<n_parties, hash_type> estimator_type;
+  	typedef StrataEstimator<hash_type> estimator_type;
   	iblt_type* iblt;
   	estimator_type estimator;
 
@@ -39,10 +39,13 @@ class dir_sync {
 		    dir != end; ++dir ) {
   			std::string full_path = dir->path().string();
   			std::cout << full_path << std::endl;
+			std::string relative_path = get_relative_path(full_path);
   			if( is_directory(dir->path()) ) { //TODO: Handle directories
-  				std::cout << get_relative_path(full_path) << "is a directory" << std::endl;
-  			} else {
-  				filenames.push_back(get_relative_path(full_path));
+  				std::cout << relative_path << " is a directory" << std::endl;
+  			} else if( relative_path[0] == '.' ) {
+				std::cout << relative_path << " is a hidden file" << std::endl;
+			} else {
+  				filenames.push_back(relative_path);
   			}
 		}
   	}
@@ -53,11 +56,19 @@ class dir_sync {
   		for(auto it = filenames.begin(); it != filenames.end(); ++it) {
   			std::string new_file_hash = get_file_hash(*it);
   			file_hashes.insert(new_file_hash);
+			if( filehash_to_file.find(new_file_hash) != filehash_to_file.end() )
+				std::cout << "Filehash: " << new_file_hash << " corresponds to "
+					  << filehash_to_file[new_file_hash] << " and " 
+					  << *it << std::endl;
   			filehash_to_file[new_file_hash] = *it;
 
   			std::string new_content_hash = get_content_hash(*it);
   			content_hashes.push_back(new_content_hash);
-  			contenthash_to_file[new_content_hash] = *it;
+  			if( contenthash_to_file.find(new_content_hash) != contenthash_to_file.end() )
+				std::cout << "Contenthash: " << new_content_hash << " corresponds to "
+					  << contenthash_to_file[new_content_hash] << " and " 
+					  << *it << std::endl;
+			contenthash_to_file[new_content_hash] = *it;
 
   			std::string new_key = get_file_content_key(new_file_hash, new_content_hash);
   			keys.insert(new_key);
@@ -106,8 +117,7 @@ class dir_sync {
   	}
 
   	size_t set_difference_estimate(estimator_type& cp_estimator) {
-  		estimator.add(cp_estimator, 1);
-  		return(estimator.set_diff_estimate());
+  		return(estimator.estimate_diff(cp_estimator));
   	}
 
   	//based on bucket estimate, create an IBLT

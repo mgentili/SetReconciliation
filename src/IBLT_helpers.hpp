@@ -62,6 +62,10 @@ class keyGenerator {
 	std::uniform_int_distribution<uint64_t> dist;
 
 	keyGenerator(): dist(0, (uint64_t) -1) {}
+	keyGenerator(int seed): dist(0, (uint64_t) -1) {
+		set_seed(seed);
+	}
+
 	key_type generate_key() {
 		return (key_type) dist(rng);
 	}
@@ -77,10 +81,13 @@ class keyGenerator<std::string, key_bits> {
   	int key_bytes;
   	static const std::string alphanumeric;
         
-    std::default_random_engine rng;
+	std::default_random_engine rng;
 	std::uniform_int_distribution<> dist;
 
   	keyGenerator(): key_bytes(key_bits/8), dist(0, alphanumeric.size() - 1) {}
+  	keyGenerator(int s): key_bytes(key_bits/8), dist(0, alphanumeric.size() - 1) {
+		set_seed(s);
+	}
   	void set_seed(int s) {
   		rng.seed(s);
   	}
@@ -105,6 +112,10 @@ template <typename key_type, typename generator = keyGenerator<key_type, sizeof(
 class keyHandler {
   public:
   	generator gen;
+	
+	keyHandler(): gen(0) {};
+	keyHandler(int seed): gen(seed) {};
+
 	void generate_distinct_keys(int num_keys, std::unordered_set<key_type>& keys) {
 		int num_inserted = 0;
 		while( num_inserted != num_keys) {

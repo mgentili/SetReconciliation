@@ -31,7 +31,7 @@ class StrataEstimator {
 
 	void serialize(file_sync::strata_estimator& estimator) {
 	  	for(size_t i = 0; i < num_strata; ++i) {
-			file_sync::IBLT* new_iblt = estimator.add_strata();
+			file_sync::IBLT2* new_iblt = estimator.add_strata();
 			iblts[i]->serialize(*new_iblt);
 	  	}
 	}

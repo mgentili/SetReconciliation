@@ -30,9 +30,6 @@
 template <typename hash_type = uint32_t, typename iblt_type = basicIBLT<hash_type, hash_type> >
 class FileSynchronizer {
   public:
-  	const size_t kgrams = 10;
-  	const size_t window_size = 100;
-
   	class Round1Info;
   	class Round2Info;
 
@@ -71,7 +68,7 @@ class FileSynchronizer {
 
   	std::string send_IBLT_encoding(size_t diff_estimate) {
   		create_IBLT(diff_estimate);
-  		file_sync::IBLT iblt_protobuf;
+  		file_sync::IBLT2 iblt_protobuf;
 		my_rd1.iblt->serialize(iblt_protobuf);
 		std::string iblt_encoding;
 		iblt_protobuf.SerializeToString(&iblt_encoding);
@@ -82,7 +79,7 @@ class FileSynchronizer {
   	}
 
   	std::string receive_IBLT_encoding(const std::string& iblt_encoding) {
-  		file_sync::IBLT iblt_protobuf;
+  		file_sync::IBLT2 iblt_protobuf;
   		std::string iblt_deencoding = decompress_string(iblt_encoding);
 		iblt_protobuf.ParseFromString(iblt_deencoding);
 		iblt_type new_iblt(my_rd1.iblt->num_buckets, my_rd1.iblt->num_hashfns);
@@ -115,7 +112,10 @@ class FileSynchronizer {
   	//Party A fills his structure with info to estimate set difference
   	//and fills the rest of the hash structure while he's at it
   	void process_file(const std::string& filename) {
-  		Fingerprinter<hash_type> f(kgrams, window_size);
+ 	  	const size_t kgrams = 10;
+  		const size_t window_size = 1000;
+
+ 		Fingerprinter<hash_type> f(kgrams, window_size);
 		f.digest_file( filename.c_str(), my_rd1.hashes);
 
 		// create mapping from my hashes to their block lengths and start position in file
@@ -279,7 +279,7 @@ class FileSynchronizer<hash_type, iblt_type>::Round2Info { //info to update A to
   public:
 	std::vector<bool> chunk_exists;  //for each chunk B has, whether A has
 	std::vector<std::string> new_chunk_info; //length and contents of each chunk that A doesn't have
-	std::vector<uint16_t> existing_chunk_encoding; //index of chunk hash within client's 
+	std::vector<uint32_t> existing_chunk_encoding; //index of chunk hash within client's 
 
 	size_t size_in_bits() { // in bits
 		size_t tot_bits = 0;
@@ -287,7 +287,7 @@ class FileSynchronizer<hash_type, iblt_type>::Round2Info { //info to update A to
 		for(auto it = new_chunk_info.begin(); it != new_chunk_info.end(); ++it) {
 			tot_bits += it->size()*8;
 		}
-		tot_bits += existing_chunk_encoding.size() * sizeof(uint16_t) * 8;
+		tot_bits += existing_chunk_encoding.size() * sizeof(uint32_t)* 8;
 		return tot_bits;
 	}
 
@@ -322,7 +322,7 @@ class FileSynchronizer<hash_type, iblt_type>::Round2Info { //info to update A to
 	void print_size_info() const {
 		std::cout << "Chunk exists has            " << chunk_exists.size() << " bools" << std::endl;
 		std::cout << "New chunk info has          " << new_chunk_info.size() << " strings" << std::endl;
-		std::cout << "Existing chunk encoding has " << existing_chunk_encoding.size() << " uint16_ts" << std::endl;
+		std::cout << "Existing chunk encoding has " << existing_chunk_encoding.size() << " uint32_ts" << std::endl;
 	}
 };
 
