@@ -8,36 +8,40 @@
 template<int N>
 class SimpleField {
   public:
-    int arg = 0;
-    SimpleField() {}
+	int arg = 0;
+	SimpleField() {}
 
-    void add( int x) {
-        arg = ((arg + x) % N + N) % N;
-    }   
+    	void add( int x) {
+        	arg = ((arg + x) % N + N) % N;
+    	}   
 
-    void add( const SimpleField<N> field_elt ) {
-        add(field_elt.get_contents());
-    }
+    	void add( const SimpleField<N> field_elt ) {
+        	add(field_elt.get_contents());
+    	}
 
-    void remove( int x) {
-        add(-x);
-    }
+    	void remove( int x) {
+        	add(-x);
+    	}
 
-    void remove( const SimpleField<N> field_elt ) {
-        remove(field_elt.get_contents());
-    }
+    	void remove( const SimpleField<N> field_elt ) {
+        	remove(field_elt.get_contents());
+    	}
+    
+    	void multiply(int i) {
+		arg = ((arg*i) % N + N) % N;
+	}
+    
+	int get_contents() const {
+        	return arg;
+    	}
 
-    int get_contents() const {
-        return arg;
-    }
+    	bool is_empty() const {
+        	return( arg == 0);
+    	}
 
-    bool is_empty() const {
-        return( arg == 0);
-    }
-
-    void print_contents() const {
-        printf("%d\n", arg);
-    }
+    	void print_contents() const {
+        	printf("%d\n", arg);
+    	}
 };
 
 template<int N, int key_bits, typename chunk_type = uint8_t>
@@ -57,7 +61,12 @@ class BaseField {
         }
         return true;
     }
-
+    //TODO: Handle for 2-party case?
+    void multiply(int k) {
+	for(int i = 0; i < key_bits; ++i) {
+	    arg[i] = field_multiply(arg[i], k);
+	}
+    }
     // void add( const BaseField<N, key_bits> field_elt) {
     //     for(int i = 0; i < key_bits; ++i) {
     //         arg[i] = field_add(arg[i], field_elt.arg[i]);
@@ -85,7 +94,7 @@ class BaseField {
     }
 
     inline uint8_t field_multiply(int x, int y) {
-        return ((x*y) % N + N) % N;
+	return ((x*y) % N + N) % N;
     }
 
     void print_contents() const {
@@ -144,7 +153,7 @@ class Field : public BaseField<N, key_bits> {
     void remove( const key_type& key) {
         add_n_times( key, -1);
     }
-
+    
     void remove( const Field<N, key_type, key_bits> field_elt) {
         for(int i = 0; i < key_bits; ++i) {
             arg[i] = field_add(arg[i], (-1)*field_elt.arg[i]);

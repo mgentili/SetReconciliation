@@ -14,35 +14,36 @@ void testFieldChar() {
 	Field<3, std::string, 64> f;
 	std::string key1 = "12345678";
 	std::string key2 = "23456789";
-	printf("Adding key %s\n", key1.c_str());
+	std::cout << "Adding key: " << key1 << std::endl;
 	f.add(key1);
 	f.print_contents();
 	assert( f.can_divide_by(1) );
 	if( f.can_divide_by(1) ) {
 		f.extract_key(buffer);
-		printf("Successfully extracted key: %s\n", buffer.c_str());
+		std::cout << "Successfully extracted key: " << buffer << std::endl;
 		assert(key1 == buffer);
 	} else {
-		printf("Failed to extract key\n");
+		std::cout << "Failed to extract key" << std::endl;
 	}
-	printf("Adding key %s\n", key2.c_str());
+	std::cout << "Adding key: " << key2 << std::endl;
 	f.add(key2);
 	f.print_contents();
 	if( f.can_divide_by(1) ) {
 		f.extract_key(buffer);
-		printf("Successfully extracted key: %s\n", buffer.c_str());
+		std::cout << "Successfully extracted key: " << buffer << std::endl;
+		assert(key1 == buffer);
 	} else {
-		printf("Failed to extract key\n");
+		std::cout << "Failed to extract key" << std::endl;
 	}
-	printf("Removing key %s\n", key1.c_str());
+	std::cout << "Removing key: " << key1 << std::endl;
 	f.remove(key1);
 	assert( f.can_divide_by(1) );
 	if( f.can_divide_by(1) ) {
 		f.extract_key(buffer);
-		printf("Successfully extracted key: %s\n", buffer.c_str());
+		std::cout << "Successfully extracted key: " << buffer << std::endl;
 		assert(key2 == buffer);
 	} else {
-		printf("Failed to extract key\n");
+		std::cout << "Failed to extract key" << std::endl;
 	}
 }
 
@@ -55,14 +56,15 @@ void testFieldString() {
 		strs.insert(generator.generate_key());
 	}
 	for( auto it = strs.begin(); it != strs.end(); ++it ) {
-		printf("Adding key: %s\n", (*it).c_str());
+		std::cout << "Adding key: " << (*it) << std::endl;
 		f.add(*it);
 		f.print_contents();
 		if( f.can_divide_by(1) ) {
 			f.extract_key(buffer);
-			printf("Successfully extracted key: %s\n", buffer.c_str());
+			std::cout << "Successfully extracted key: " << buffer << std::endl;
+			assert(*it == buffer);
 		} else {
-			printf("Failed to extract key\n");
+			std::cout << "Failed to extract key" << std::endl;
 		}
 	}
 	for( auto it = strs.begin(); it != strs.end(); ++it ) {
@@ -210,7 +212,7 @@ void test2FieldString() {
 
 	std::string shad = HashUtil::SHA1Hash(key1.c_str(), key1.size());
 	shad = shad + shad;
-	printf("Adding key: %s with length %d\n", shad.c_str(), shad.size());
+	std::cout << "Adding key: " << shad << " with length " << shad.size() << std::endl;
 	f2.add(shad);
 	f2.print_contents();
 	std::string extracted;
@@ -219,8 +221,20 @@ void test2FieldString() {
 	f2.print_contents();
 	f2.add(extracted);
 	f2.print_contents();
-	printf("Extracted key: %s with size %d\n", extracted.c_str(), extracted.size());
+	std::cout << "Extracted key: " << extracted << " with size " << extracted.size() << std::endl;
 
+}
+
+void testMultiply() {
+	Field<17, uint32_t> f1;
+	uint32_t x = 245246345;
+	int k = 13;
+	f1.add(x);
+	f1.print_contents();
+	f1.add(x);
+	f1.print_contents();
+	f1.multiply(k);
+	f1.print_contents();
 }
 
 int main() {
@@ -233,5 +247,6 @@ int main() {
 	testFieldMultiAdd();
 	test2FieldInt();
 	test2FieldString();
+	testMultiply();
 	return 1;
 }

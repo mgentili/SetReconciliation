@@ -43,7 +43,12 @@ class multiIBLT_bucket {
 		hash_sum.arg = bucket.hash_sum();
 		count.arg = bucket.count();
 	}
-
+	
+	void multiply(int i) {
+		key_sum.multiply(i);
+		hash_sum.multiply(i);
+		count.multiply(i);
+	}
 	void add(const key_type& k, const hash_type& h) {
 		key_sum.add(k);
 		hash_sum.add(h);
@@ -152,7 +157,7 @@ class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, ke
 		parent_bucket_type::add(k, h);
 		has_key[0] = ~has_key[0];
 	}
-
+	
 	void remove(const this_bucket_type& counterparty_bucket) {
 		parent_bucket_type::remove(counterparty_bucket);
 		has_key ^= counterparty_bucket.has_key;
@@ -177,6 +182,7 @@ class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, ke
 		printf("\n");
 	}
 };
+
 /**
 Parameters:
 	num_hashfns: number of hash functions (equivalent to k in the paper)
@@ -186,8 +192,8 @@ template <size_t n_parties = 2,
 	typename key_type = uint32_t,
 	size_t key_bits = 8*sizeof(key_type),
 	typename hash_type = uint32_t, 
-	// typename bucket_type = multiIBLT_bucket<n_parties, key_type, key_bits, hash_type>,
-	typename bucket_type = multiIBLT_bucket_extended<n_parties, key_type, key_bits, hash_type>,
+	typename bucket_type = multiIBLT_bucket<n_parties, key_type, key_bits, hash_type>,
+//	typename bucket_type = multiIBLT_bucket_extended<n_parties, key_type, key_bits, hash_type>,
 	//typename hasher = TabulationHashing<key_bits, hash_type> >
 	typename hasher = MurmurHashing<key_bits, hash_type> >
 class multiIBLT {
@@ -207,6 +213,10 @@ class multiIBLT {
 							num_hashfns(num_hashfns),
 							subIBLTs(num_hashfns),
 							sub_hashers(num_hashfns) {
+		setup();
+	}
+
+	void setup() {
 		while( num_buckets % num_hashfns != 0) {
 			++num_buckets;
 		}
@@ -217,6 +227,20 @@ class multiIBLT {
 			subIBLTs[i].resize(buckets_per_subIBLT);
 			sub_hashers[i].set_seed(i+1); //separate seeds enough
 		}
+
+	}
+
+	multiIBLT( const this_iblt_type& cp_IBLT ): 
+						num_buckets(cp_IBLT.num_buckets),
+						num_hashfns(cp_IBLT.num_hashfns),
+						subIBLTs(num_hashfns),
+						sub_hashers(num_hashfns) {
+//		num_buckets = cp_IBLT.num_buckets;
+//		num_hashfns = cp_IBLT.num_hashfns;
+//		subIBLTs.resize(num_hashfns);
+//		sub_hashers.resize(num_hashfns)
+		setup();
+		add(cp_IBLT);
 	}
 
 	size_t size_in_bits() {
@@ -240,22 +264,30 @@ class multiIBLT {
 		}
 	}
 
-	void add(const this_iblt_type& counterparty, size_t index) {
+	void add(const this_iblt_type& counterparty) {
 		assert( counterparty.buckets_per_subIBLT == buckets_per_subIBLT 
 			&&  counterparty.num_hashfns == num_hashfns);
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
-				subIBLTs[i][j].add( counterparty.subIBLTs[i][j], index );
+				subIBLTs[i][j].add( counterparty.subIBLTs[i][j]);
 			}
 		}
 	}
 
-	void remove(const this_iblt_type& counterparty, size_t index) {
+	void remove(const this_iblt_type& counterparty) {
 		assert( counterparty.buckets_per_subIBLT == buckets_per_subIBLT 
 			&&  counterparty.num_hashfns == num_hashfns);
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
-				subIBLTs[i][j].remove( counterparty.subIBLTs[i][j], index );
+				subIBLTs[i][j].remove( counterparty.subIBLTs[i][j] );
+			}
+		}
+	}
+	
+	void multiply(int mult_factor) {
+		for(size_t i = 0; i < num_hashfns; ++i) {
+			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
+				subIBLTs[i][j].multiply(mult_factor);
 			}
 		}
 	}
@@ -286,7 +318,7 @@ class multiIBLT {
 	}	
 
 		//peels the keys from an IBLT, returning true upon success, false upon failure
-	bool peel(std::unordered_map<key_type, std::vector<int> >& peeled_keys ) {
+	bool peel(std::unordered_set<key_type>& peeled_keys ) {
 		std::deque<bucket_type> peelable_keys;
 		bucket_type curr_bucket;
 
@@ -299,17 +331,10 @@ class multiIBLT {
 				key_type peeled_key;
 				curr_bucket.key_sum.extract_key(peeled_key);
 				if( peeled_keys.find(peeled_key) == peeled_keys.end()) { // haven't peeled this key before
-					std::vector<int> indices;
-					
-					assert(curr_bucket.has_key.count() < n_parties && curr_bucket.has_key.count() > 0);
-					for(size_t i = 0; i < n_parties; ++i) {
-						if(curr_bucket.has_key[i]) {
-							indices.push_back(i);
-						}
-					}
-					peeled_keys[peeled_key] = indices;
+					peeled_keys.insert(peeled_key);
 					peel_key( curr_bucket, peelable_keys );
-				} 
+				} else {
+				}
 			}
 
 			//either every bucket has one key or more, in which case we failed,
@@ -343,17 +368,6 @@ class multiIBLT {
 		}
 	}
 
-	//peels the keys from an IBLT, returning true upon success, false upon failure
-	//TODO: efficient way to do peeling?
-	bool peel(std::unordered_set<key_type>& peeled_keys ) {
-		std::unordered_map<key_type, std::vector<int> > key_mapping;
-		if( !peel(key_mapping) ) {
-			return false;
-		}
-		filter_keys(key_mapping, peeled_keys);
-		return true;
-	}
-
 	// returns whether was able to find peelable key
 	// stores whether during search 
 	bool find_peelable_key(std::deque<bucket_type>& peelable_keys) {
@@ -384,32 +398,26 @@ class multiIBLT {
 	//TODO: handle case of removing non-existent keys
 	//Will need to iterate from -nparties+1 to n_parties-1 (skipping 0)
 	bool can_peel(bucket_type& curr_bucket) {
-		if( curr_bucket.count.get_contents() == 0 ) {
+		int count = curr_bucket.count.get_contents();
+		if( count == 0 ) {
 			//printf("Current bucket count is: %d\n", curr_bucket.count.get_contents());
 			return false;
 		}
 		
-		for(size_t i = 1; i < n_parties; ++i) {
-			hash_type expected_hash;
-			key_type buf;
-			if( curr_bucket.key_sum.can_divide_by( i )
-				&& curr_bucket.hash_sum.can_divide_by( i )
-				&& (size_t) curr_bucket.count.get_contents() == i ) {
+		hash_type expected_hash;
+		key_type buf;
+		
+		if( curr_bucket.key_sum.can_divide_by( count )
+			&& curr_bucket.hash_sum.can_divide_by( count )) {
 
-				curr_bucket.key_sum.extract_key(buf);
-				curr_bucket.hash_sum.extract_key(expected_hash);
-				hash_type actual_hash = key_hasher.hash(buf);
-				//std::cout << "Buffer: " << buf << ", Actual Hash: " << actual_hash << ", Expected Hash: " << expected_hash << std::endl;
-				if( expected_hash == actual_hash) {
-					//TODO: Fix for case of even # of parties
-					//Problem: If key in all IBLTs, then count = 0, but has_key=111
-					if(curr_bucket.has_key.count() != i) { 
-						curr_bucket.has_key = ~curr_bucket.has_key;
-						// printf("Curr bucket count disagrees\n");
-						// curr_bucket.print_contents();
-					}
-					return true;
-				}
+			curr_bucket.key_sum.extract_key(buf);
+			curr_bucket.hash_sum.extract_key(expected_hash);
+			hash_type actual_hash = key_hasher.hash(buf);
+			//std::cout << "Buffer: " << buf << ", Actual Hash: " << actual_hash << ", Expected Hash: " << expected_hash << std::endl;
+			if( expected_hash == actual_hash) {
+					// printf("Curr bucket count disagrees\n");
+					// curr_bucket.print_contents();
+				return true;
 			}
 		}
 		return false;

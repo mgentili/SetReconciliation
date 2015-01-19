@@ -165,6 +165,23 @@ class keyHandler {
 	}
 
 	void assign_keys(double insert_prob, int n_parties, int num_keys, 
+					 std::vector<std::unordered_set<key_type> >& key_assignments) {
+		std::unordered_set<key_type> all_keys;
+		generate_distinct_keys(num_keys, all_keys);
+		std::unordered_map<key_type, std::vector<int> > key_map;
+		assign_keys( insert_prob, n_parties, all_keys, key_map);
+		transform_keys(key_map, key_assignments);
+	}
+
+	void transform_keys(std::unordered_map<key_type, std::vector<int> >& key_map, std::vector<std::unordered_set<key_type> >& key_vec) {
+		for(auto it = key_map.begin(); it != key_map.end(); ++it) {
+			for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2 ) {
+				key_vec[*it2].insert(it->first);
+			}
+		}	
+	}
+ 
+	void assign_keys(double insert_prob, int n_parties, int num_keys, 
 					 std::unordered_map<key_type, std::vector<int> >& key_assignments) {
 		std::unordered_set<key_type> all_keys;
 		generate_distinct_keys(num_keys, all_keys);
@@ -191,6 +208,21 @@ class keyHandler {
 		for(auto it1 = key1.begin(); it1 != key1.end(); ++it1) {
 			if( key2.find(*it1) != key2.end() ) {
 				intersection.insert(*it1);
+			}
+		}
+	}
+
+	void set_intersection(std::vector<std::unordered_set<key_type>>& keys, std::unordered_set<key_type>& intersection) {
+		for(auto it = keys[0].begin(); it != keys[0].end(); ++it) {
+			int in_intersection = true;
+			for(size_t i = 1; i < keys.size(); ++i) {
+				if(keys[i].find(*it) == keys[i].end()) {
+					in_intersection = false;
+					break;
+				}
+			}
+			if( in_intersection ) {
+				intersection.insert(*it);
 			}
 		}
 	}

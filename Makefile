@@ -16,7 +16,8 @@ FINGERPRINT_SRCS=fingerprint_testing.cpp
 FILE_SYNC_SRCS=file_sync_testing.cpp file_sync.pb.cpp
 STRATA_SRCS=StrataEstimator_testing.cpp
 DIR_SYNC_SRCS=dir_sync_testing.cpp
-SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS) $(STRATA_SRCS) $(DIR_SYNC_SRCS)
+NETWORK_SRCS=network_testing.cpp
+SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS) $(STRATA_SRCS) $(DIR_SYNC_SRCS) $(NETWORK_SRCS)
 OBJS=$(SRCS:%.cpp=obj/%.o)
 
 BASIC_IBLT=bin/basicIBLT_testing
@@ -27,9 +28,10 @@ FINGERPRINT=bin/fingerprint_testing
 SYNC=bin/file_sync_testing
 STRATA=bin/strata_testing
 DIR_SYNC=bin/dir_sync_testing
-PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC)
+NETWORK=bin/network_testing
+PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC) $(NETWORK)
 
-.PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata dir_sync
+.PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata dir_sync network
 default: all
 all: $(PROGRAMS)
 tabulation: $(TABULATION)
@@ -40,6 +42,7 @@ fingerprint: $(FINGERPRINT)
 sync: $(SYNC)
 strata: $(STRATA)
 dir_sync: $(DIR_SYNC)
+network: $(NETWORK)
 obj/%.o: src/%.cpp
 	$(CXX) $(CPPFLAGS) -c -MMD -MP $< -o $@
 
@@ -74,6 +77,10 @@ $(STRATA): $(COMMON_SRCS:%.cpp=obj/%.o) $(STRATA_SRCS:%.cpp=obj/%.o)
 
 $(DIR_SYNC): $(COMMON_SRCS:%.cpp=obj/%.o) $(DIR_SYNC_SRCS:%.cpp=obj/%.o)
 	$(CXX) $^ $(LDFLAGS) -o $@
+
+$(NETWORK): $(COMMON_SRCS:%.cpp=obj/%.o) $(NETWORK_SRCS:%.cpp=obj/%.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
 
 clean:
 	$(RM) $(OBJS) $(PROGRAMS) $(DEPS)
