@@ -25,11 +25,14 @@ class iblt_node {
 	static const int key_bits = 8*sizeof(key_type);
 	typedef multiIBLT_bucket<SMALL_PRIME, key_type, key_bits, hash_type> bucket_type;
 	typedef multiIBLT<n_nodes, key_type, key_bits, hash_type, bucket_type> iblt_type; 
-	iblt_type* start_iblt;
-	iblt_type* inter_iblt;
-	SimpleField<SMALL_PRIME> coeff_sum;
+	iblt_type* start_iblt; //IBLT containing all the keys that the node begins with
+	iblt_type* inter_iblt; //IBLT containing linear combo of keys received
+	SimpleField<SMALL_PRIME> coeff_sum; //sum of coefficients of linear combo of keys
 	keyGenerator<uint32_t> kg;
- 	int id;	
+ 	int id; //unique identifier for node
+	std::vector<int> prev_want_info, new_want_info; //ids of nodes that have made pull requests
+	bool has_message;
+
 	iblt_node( int num_buckets, int seed ) {
 		id = seed;
 		kg.set_seed(id);
@@ -47,18 +50,35 @@ class iblt_node {
 		start_iblt->insert_keys(messages);
 		inter_iblt->insert_keys(messages);
 		coeff_sum.add(1);
+		has_message = (messages.size() > 0 );
+	}
+	
+	void new_epoch() {
+		prev_want_info = new_want_info;
+		new_want_info.resize(0);
 	}
 
 	void receive_message( iblt_node<n_nodes>& neighbor ) {
 		inter_iblt->add(*(neighbor.inter_iblt));
 		coeff_sum.add(neighbor.coeff_sum);
+		has_message = true;
 	}
 
 	void send_message( iblt_node<n_nodes>& neighbor ) {	
 		int rand_mult = (kg.generate_key() % (SMALL_PRIME - 1)) + 1;
 		inter_iblt->multiply(rand_mult);
 		coeff_sum.multiply(rand_mult);
+		NET_DEBUG( id << " pushing message to " << neighbor.id );
 		neighbor.receive_message(*this);
+	}
+	
+	void send_pull_request( iblt_node<n_nodes>& neighbor ) {
+		NET_DEBUG( id << " sending pull request to " << neighbor.id );
+		neighbor.receive_pull_request(*this);
+	}
+
+	void receive_pull_request( iblt_node<n_nodes>& neighbor ) {
+		new_want_info.push_back( neighbor.id );
 	}
 
 	bool retrieve_messages(std::unordered_set<key_type>& messages) {
@@ -79,8 +99,8 @@ class GossipNetwork {
 	std::vector<std::vector<int>> adjacencies;
 	std::vector<node_type*> nodes;
 	keyGenerator<uint32_t> kg;
-	
-	GossipNetwork(network_type type, int set_diff_bound): adjacencies(n_nodes), nodes(n_nodes) {
+	int iter;	
+	GossipNetwork(network_type type, int set_diff_bound): adjacencies(n_nodes), nodes(n_nodes), iter(0) {
 		if(type == COMPLETE) {
 			for(int i = 0; i < n_nodes; ++i) {
 				for(int j = 0; j < n_nodes; ++j) {
@@ -109,14 +129,36 @@ class GossipNetwork {
 
 	void run_iter() {
 		for(int i = 0; i < n_nodes; ++i) {
-			push(i);
+			//push(i);
+			nodes[i]->new_epoch();
+			push_pull(i);
 		}
+		++iter;
 	}
 	
 	void push(int i) {
 		int j = kg.generate_key() % (adjacencies[i].size() + 1);
 		nodes[i]->send_message(*nodes[j]);
-		NET_DEBUG( i << " sending message to " << j );
+
+	}
+
+	void pull(int i) {
+		int j = kg.generate_key() % (adjacencies[i].size() + 1);
+		nodes[i]->send_pull_request(*nodes[j]);
+	}
+
+	void push_pull(int i) {
+		if( nodes[i]->has_message ) {
+			size_t wanters = nodes[i]->prev_want_info.size();
+			if( wanters > 0) {
+				int j = kg.generate_key() % wanters;
+				nodes[i]->send_message(*nodes[j]);
+			} else {
+				push(i);
+			}
+		} else {
+			pull(i);
+		}
 	}
 
 	void peel_keys(std::vector<std::unordered_set<key_type> >& keys ) {

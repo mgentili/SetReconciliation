@@ -211,6 +211,27 @@ class keyHandler {
 			}
 		}
 	}
+	// Returns all the keys in keys1 - keys2
+	void set_difference(std::unordered_set<key_type>& keys1, std::unordered_set<key_type>& keys2, std::unordered_set<key_type>& result) {
+		for(auto it = keys1.begin(); it != keys1.end(); ++it) {
+			if( keys2.find(*it) == keys2.end() ) {
+				result.insert(*it);
+			}
+		}
+	}
+	
+	//Returns all the keys in (keys1 U keys2) - (keys1 intersect keys2)
+	void distinct_keys(std::unordered_set<key_type>& keys1, std::unordered_set<key_type>& keys2, std::unordered_set<key_type>& result) {
+		set_difference(keys1, keys2, result);
+		set_difference(keys2, keys1, result);
+	}
+
+	void distinct_keys(std::vector<std::unordered_set<key_type> >& key_assignments, std::unordered_set<key_type>& result) {
+		std::unordered_set<key_type> I, U;
+		set_intersection(key_assignments, I);
+		set_union(key_assignments, U);
+		set_difference(U, I, result);
+	}
 
 	void set_intersection(std::vector<std::unordered_set<key_type>>& keys, std::unordered_set<key_type>& intersection) {
 		for(auto it = keys[0].begin(); it != keys[0].end(); ++it) {
