@@ -15,13 +15,17 @@ plotdir = 'plot/'
 def getFileName( test_type, subtest_type, file_len, extra = "" ):
 	return "{}{}_{}_{}_{}_{}.res".format( tempdir, test_type, subtest_type, file_len, extra, str(int(time.time())) )
 
+def getBlockIncrement(start_block, end_block, num_trials = 100):
+	diff = end_block - start_block
+	return diff/num_trials
+
 def generateRandData( file_len, start_block, end_block, error_prob, num_trials = 1):
 	test_type = 'file_sync'
 	subtest_type = 'rand'
 	filename = getFileName( test_type, subtest_type, str(file_len), str(error_prob));
 	fp = open(filename, 'w')
 	for n in xrange(num_trials):
-		for block_size in xrange(start_block, end_block, 10):
+		for block_size in xrange(start_block, end_block, getBlockIncrement(start_block, end_block)):
 			subprocess.call(
 				[
 					filenames[test_type], '--file-len', str(file_len),
@@ -38,7 +42,7 @@ def generateBlockData( file_len, start_block, end_block, num_blocks, num_trials 
 	filename = getFileName( test_type, subtest_type, str(file_len), str(num_blocks));
 	fp = open(filename, 'w')
 	for n in xrange(num_trials):
-		for block_size in xrange(start_block, end_block, 10):
+		for block_size in xrange(start_block, end_block, getBlockIncrement(start_block, end_block)):
 			subprocess.call(
 				[
 					filenames[test_type], '--file-len', str(file_len),
@@ -72,7 +76,7 @@ def generateActualData( start_block, end_block, project, tag1, tag2, num_trials 
 	subtest_type='actual'
 	filename = getFileName( test_type, subtest_type, project, "{}_{}".format(tag1, tag2) )
 	for n in xrange(num_trials):
-		for block_size in xrange(start_block, end_block, 10):
+		for block_size in xrange(start_block, end_block, getBlockIncrement(start_block, end_block)):
 			subprocess.call( 
 				[
 					"./generate_similar_tag.sh", project, tag1, tag2

@@ -4,6 +4,7 @@ rm A/* B/*
 mkdir tmp
 cd tmp
 git clone https://github.com/$1
+echo $(basename $1)
 cd $(basename $1)
 
 #gcc, gcc-4_9_0-release, gcc-4_3_0-release
