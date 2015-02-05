@@ -228,7 +228,7 @@ void test2FieldString() {
 void testMultiply() {
 	Field<17, uint32_t> f1;
 	uint32_t x = 245246345;
-	int k = 13;
+	int k = 3456;
 	f1.add(x);
 	f1.print_contents();
 	f1.add(x);

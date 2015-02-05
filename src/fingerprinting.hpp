@@ -86,16 +86,18 @@ class RollingHash {
 template <typename hash_type = uint64_t, typename hasher_type = RollingHash<hash_type> >
 class Fingerprinter {
   public:
-  	size_t kgrams;
-  	size_t w;
+	const size_t kgrams = 10;
+  	size_t avg_block_size;
   	hash_type* h;
   	hasher_type hasher;
-
-  	Fingerprinter(size_t kgrams, size_t window_size): kgrams(kgrams), w(window_size), hasher(kgrams) {}
+	
+	Fingerprinter(size_t block_size): avg_block_size(block_size), hasher(kgrams) {}
 
   	// uses winnowing to determine set of hashes for file
   	// returns the size of the hashed file
 	size_t winnow(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+		size_t w = 2*avg_block_size - 1;
+		
 		h = new hash_type[w];
 
 		for(size_t i = 0; i < w; ++i) {
@@ -132,7 +134,8 @@ class Fingerprinter {
 		return file_size;
 	}
 
-	size_t modding(const char* filename, int p, vector<pair<hash_type, size_t> >& hashes) {
+	size_t modding(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+		size_t p = avg_block_size;
 		size_t file_size = hasher.load_file(filename);
 		for(size_t i = 0; i < file_size; ++i) {
 			hash_type next_hash = hasher.next_hash();
@@ -194,13 +197,14 @@ class Fingerprinter {
 
 	// TODO: implement
 	size_t two_way_min(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
-		h = new hash_type[w];
+	//	
+	//	h = new hash_type[w];
 
-		for(size_t i = 0; i < w; ++i) {
-			h[i] = (hash_type) (-1);
-		}
+	//	for(size_t i = 0; i < w; ++i) {
+	//		h[i] = (hash_type) (-1);
+	//	}
 
-		hasher.load_file(filename);
+	//	hasher.load_file(filename);
 		return -1;
 	}
 

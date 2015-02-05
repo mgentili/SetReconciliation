@@ -217,11 +217,12 @@ class multiIBLT {
 	}
 
 	void setup() {
-		while( num_buckets % num_hashfns != 0) {
+		while( num_buckets % num_hashfns != 0 && num_buckets == 0) {
 			++num_buckets;
 		}
 		assert(num_buckets % num_hashfns == 0);
 		buckets_per_subIBLT = num_buckets/num_hashfns;
+		assert(buckets_per_subIBLT > 0 );
 		key_hasher.set_seed(0);
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			subIBLTs[i].resize(buckets_per_subIBLT);

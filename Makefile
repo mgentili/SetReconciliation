@@ -5,9 +5,9 @@ RM=-rm -f
 #OPT= -DNDEBUG
 OPT= -g -ggdb
 CPPFLAGS=-std=c++11 -Wall $(OPT) 
-LDFLAGS=-lprotobuf -lz -lboost_system -lboost_filesystem -lssl -lcrypto
+LDFLAGS=-lprotobuf -lz -lboost_system -lboost_filesystem -lboost_program_options -lssl -lcrypto
 
-COMMON_SRCS=hash_util.cpp IBLT_helpers.cpp
+COMMON_SRCS=hash_util.cpp IBLT_helpers.cpp jsoncpp.cpp
 BASIC_IBLT_SRCS=basicIBLT_testing.cpp
 MULTI_IBLT_SRCS=multiIBLT_testing.cpp
 TABULATION_SRCS=tabulation_testing.cpp
@@ -17,7 +17,8 @@ FILE_SYNC_SRCS=file_sync_testing.cpp file_sync.pb.cpp
 STRATA_SRCS=StrataEstimator_testing.cpp
 DIR_SYNC_SRCS=dir_sync_testing.cpp
 NETWORK_SRCS=network_testing.cpp
-SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS) $(STRATA_SRCS) $(DIR_SYNC_SRCS) $(NETWORK_SRCS)
+HASH_SRCS=hash_testing.cpp
+SRCS=$(COMMON_SRCS) $(BASIC_IBLT_SRCS) $(MULTI_IBLT_SRCS) $(TABULATION_SRCS) $(BASIC_FIELD_SRCS) $(FINGERPRINT_SRCS) $(FILE_SYNC_SRCS) $(STRATA_SRCS) $(DIR_SYNC_SRCS) $(NETWORK_SRCS) $(HASH_SRCS)
 OBJS=$(SRCS:%.cpp=obj/%.o)
 
 BASIC_IBLT=bin/basicIBLT_testing
@@ -29,9 +30,10 @@ SYNC=bin/file_sync_testing
 STRATA=bin/strata_testing
 DIR_SYNC=bin/dir_sync_testing
 NETWORK=bin/network_testing
-PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC) $(NETWORK)
+HASH=bin/hash_testing
+PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC) $(NETWORK) $(HASH)
 
-.PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata dir_sync network
+.PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata network dir_sync hash
 default: all
 all: $(PROGRAMS)
 tabulation: $(TABULATION)
@@ -43,6 +45,7 @@ sync: $(SYNC)
 strata: $(STRATA)
 dir_sync: $(DIR_SYNC)
 network: $(NETWORK)
+hash: $(HASH)
 obj/%.o: src/%.cpp
 	$(CXX) $(CPPFLAGS) -c -MMD -MP $< -o $@
 
@@ -80,6 +83,10 @@ $(DIR_SYNC): $(COMMON_SRCS:%.cpp=obj/%.o) $(DIR_SYNC_SRCS:%.cpp=obj/%.o)
 
 $(NETWORK): $(COMMON_SRCS:%.cpp=obj/%.o) $(NETWORK_SRCS:%.cpp=obj/%.o)
 	$(CXX) $^ $(LDFLAGS) -o $@
+
+$(HASH): $(COMMON_SRCS:%.cpp=obj/%.o) $(HASH_SRCS:%.cpp=obj/%.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
 
 
 clean:

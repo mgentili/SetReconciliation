@@ -4,6 +4,7 @@
 #include <map>
 #include <assert.h>
 #include <zlib.h>
+#include <cmath>
 
 #include "basicIBLT.hpp"
 #include "multiIBLT.hpp"
@@ -20,12 +21,14 @@
 #  define SYNC_DEBUG(x)  do {} while (0)
 #endif
 
-#define FILE_ENCODING_DEBUG 1
+#define FILE_ENCODING_DEBUG 0
 #if FILE_ENCODING_DEBUG
 #  define ENCODING_DEBUG(x)  do { std::cerr << x << std::endl; } while(0)
 #else
 #  define ENCODING_DEBUG(x)  do {} while (0)
 #endif
+
+#define DEFAULT_BLOCK_SIZE 700
 
 template <typename hash_type = uint32_t, typename iblt_type = basicIBLT<hash_type, hash_type> >
 class FileSynchronizer {
@@ -37,11 +40,16 @@ class FileSynchronizer {
   	Round2Info my_rd2;
   	std::unordered_set<hash_type> my_distinct_keys, cp_distinct_keys;
   	std::string file;
+	size_t avg_block_size; 
 
-  	FileSynchronizer(const char* filename) {
-  		file = std::string(filename);
-  		process_file(file);
+  	FileSynchronizer(std::string& filename): file(filename)  {
+		avg_block_size = get_block_size( get_file_size(file.c_str() ) );
+		process_file(file);
   	};
+
+	FileSynchronizer(std::string& filename, size_t avg_block_size): file(filename), avg_block_size(avg_block_size) {
+		process_file(file);
+	} 
 
 //ENCODING STUFF:
   	std::string send_strata_encoding() {
@@ -62,11 +70,12 @@ class FileSynchronizer {
   		StrataEstimator<hash_type> cp_estimator;
   		cp_estimator.deserialize(estimator);
   		size_t diff_estimate = get_difference_estimate(cp_estimator);
-  		create_IBLT(diff_estimate);
+		create_IBLT(diff_estimate);
   		return diff_estimate;
   	}
 
   	std::string send_IBLT_encoding(size_t diff_estimate) {
+		create_IBLT(diff_estimate);
   		create_IBLT(diff_estimate);
   		file_sync::IBLT2 iblt_protobuf;
 		my_rd1.iblt->serialize(iblt_protobuf);
@@ -109,13 +118,16 @@ class FileSynchronizer {
   	}
 
 //PROTOCOL STUFF
+
+	size_t get_block_size(size_t file_size) {
+		size_t new_block_size = (size_t) sqrt( file_size );
+		return (new_block_size > DEFAULT_BLOCK_SIZE) ? new_block_size : DEFAULT_BLOCK_SIZE;
+	}
   	//Party A fills his structure with info to estimate set difference
   	//and fills the rest of the hash structure while he's at it
   	void process_file(const std::string& filename) {
- 	  	const size_t kgrams = 10;
-  		const size_t window_size = 1000;
 
- 		Fingerprinter<hash_type> f(kgrams, window_size);
+ 		Fingerprinter<hash_type> f(avg_block_size);
 		f.digest_file( filename.c_str(), my_rd1.hashes);
 
 		// create mapping from my hashes to their block lengths and start position in file
@@ -171,15 +183,17 @@ class FileSynchronizer {
 		SYNC_DEBUG("Party A has" << cp_sorted_hashes.size() << " hashes");
   	}
 
-  	void get_distinct_keys(iblt_type& cp_IBLT) {
+  	bool get_distinct_keys(iblt_type& cp_IBLT) {
   		iblt_type resIBLT(cp_IBLT.num_buckets, cp_IBLT.num_hashfns);
   		resIBLT.add(*(my_rd1.iblt));
   		resIBLT.remove(cp_IBLT);
   		bool res = resIBLT.peel(my_distinct_keys, cp_distinct_keys);
 		if( !res ) {
-  			std::cout << "Failed to peel, need to retry" << std::endl;
-  			exit(1);
+  			std::cerr << "Failed to peel, need to retry" << std::endl;
+  			return false;
+			//exit(1);
   		}
+		return true;
   	}
 
   	void determine_chunk_encoding(std::vector<hash_type>& cp_sorted_hashes) {
@@ -213,20 +227,23 @@ class FileSynchronizer {
   		delete[] buf;
   	}
 
-  	void receive_IBLT(iblt_type& cp_IBLT) {
+  	bool receive_IBLT(iblt_type& cp_IBLT) {
   	// void receive_IBLT(const char* filename, iblt_type& cp_IBLT, Round1Info& cp_rd1) {
 		
-		get_distinct_keys(cp_IBLT);
+		if( !get_distinct_keys(cp_IBLT) ) {
+			return false;
+		};
 
 		std::vector<hash_type> cp_sorted_hashes;
 		get_counterparty_hashes(cp_sorted_hashes);
 
 		determine_chunk_encoding(cp_sorted_hashes);
+		return true;
   	}
 
   	
   	void reconstruct_file(Round2Info& cp_rd2) {
-  		FILE* fp = fopen("temp.txt", "w");
+  		FILE* fp = fopen("tmp/temp.txt", "w");
 		if( !fp ) {
 			cout << "Unable to open file" << endl;
 			exit(1);

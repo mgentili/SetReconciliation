@@ -5,13 +5,12 @@
 template <typename hash_type = uint64_t>
 class FingerprintTester {
   public:
-	size_t kgrams;
-	size_t window_size;
+	size_t avg_block_size;
 	Fingerprinter<hash_type> f;
 	keyHandler<hash_type> kh;
 
-	FingerprintTester(size_t kgrams, size_t window_size): 
-		kgrams(kgrams), window_size(window_size), f(kgrams, window_size) {}
+	FingerprintTester(size_t avg_block_size): 
+		avg_block_size(avg_block_size), f(avg_block_size) {}
 
 	void basicTest(const char* filename) {
 		std::vector<pair<hash_type, size_t> > hashes;
@@ -19,7 +18,7 @@ class FingerprintTester {
 		// for(size_t i = 0; i < hashes.size(); ++i) {
 		// 	std::cout << "Hash: " << hashes[i].first << ", Pos: " << hashes[i].second << std::endl;
 		// }
-		std::cout << "Density is " << (double) hashes.size()/ file_size << "compared to theoretical " << 2.0/(window_size+1) << std::endl; 
+		std::cout << "Density is " << (double) hashes.size()/ file_size << "compared to theoretical " << (double) 1.0/avg_block_size << std::endl; 
 	}
 
 	// filters out just the first component of the pair<hash_type, size_t>
@@ -75,10 +74,9 @@ class FingerprintTester {
 
 
 int main() {
-	const size_t kgrams = 8;
-	const size_t window_size = 100;
+	const size_t avg_block_size = 100;
 	typedef uint32_t hash_type;
-	FingerprintTester<hash_type> ft( kgrams, window_size);
+	FingerprintTester<hash_type> ft(avg_block_size);
 	const char* file1 = "tmp.txt";
 	const char* file2 = "tmp2.txt";
 	double similarity = 0.999;

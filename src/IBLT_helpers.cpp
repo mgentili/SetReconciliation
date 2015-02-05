@@ -16,6 +16,14 @@ size_t load_buffer_with_file(const char* filename, char** buf) {
 	return size;
 }
 
+size_t get_file_size(const char* filename) {
+	FILE* fp1 = fopen(filename, "r");
+	fseek(fp1, 0, SEEK_END);
+	size_t file_size = ftell(fp1);
+	fclose(fp1);
+	return file_size;
+}
+
 // generate_random_file creates a file with len alphanumeric characters
 void generate_random_file(const char* filename, size_t len) {
 	FILE* fp = fopen(filename, "w");
@@ -45,6 +53,46 @@ void generate_similar_file(const char* old_file, const char* new_file, double pc
 	while((c = fgetc(fp1)) != EOF) {
 		if( (kg.generate_key() % 100000) < sim) {
 			fputc(c, fp2);
+		} else {
+			fputc( (char) (c+1), fp2 );
+		}
+	}
+	fclose(fp1);
+	fclose(fp2);
+}
+
+void generate_block_changed_file(const char* old_file, const char* new_file, size_t num_new_blocks, size_t block_size) {
+	keyGenerator<uint64_t> kg;
+	std::unordered_set<size_t> start_changes;
+		
+	FILE* fp1 = fopen(old_file, "r");
+	size_t file_size = get_file_size(old_file);
+
+	while( start_changes.size() != num_new_blocks ) {
+		start_changes.insert( kg.generate_key() % (file_size - block_size ) );
+	}
+
+			
+
+	FILE* fp2 = fopen(new_file, "w");
+
+	if( !fp1 || !fp2 ) {
+		std::cout << "failed to open file" << std::endl;
+		exit(1);
+	}
+	int c;
+	size_t counter = 0;
+	while( counter < file_size ) {
+		if( start_changes.find(counter) != start_changes.end() ) {
+			for(size_t i = 0; i < block_size; ++i) {
+				c = fgetc(fp1);
+				fputc((char) (c+1), fp2);
+			}
+			counter += block_size;
+		} else {
+			c = fgetc(fp1);
+			fputc( c, fp2);
+			counter++;
 		}
 	}
 	fclose(fp1);

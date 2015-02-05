@@ -2,13 +2,14 @@
 #define _BASIC_FIELD
 
 #include <cstring>
+#include <iostream>
 
 //TODO: Figure out how to make template stuff work better?
 
 template<int N>
 class SimpleField {
   public:
-	int arg = 0;
+	int64_t arg = 0;
 	SimpleField() {}
 
     	void add( int x) {
@@ -27,7 +28,12 @@ class SimpleField {
         	remove(field_elt.get_contents());
     	}
     
-    	void multiply(int i) {
+    	void multiply(int64_t i) {
+		if( i > 0 ) {
+			if( arg*i < arg ) {
+				std::cout << "In smple field: " << arg << " * " << i << " = " << arg*i << std::endl;
+			}
+		}
 		arg = ((arg*i) % N + N) % N;
 	}
     
@@ -40,16 +46,18 @@ class SimpleField {
     	}
 
     	void print_contents() const {
-        	printf("%d\n", arg);
+        	std::cout << arg << std::endl;
     	}
 };
 
-template<int N, int key_bits, typename chunk_type = uint8_t>
+//template<int N, int key_bits, typename chunk_type = uint8_t>
+//template<int N, int key_bits, typename chunk_type = uint16_t>
+template<int N, int key_bits, typename chunk_type = uint32_t>
 class BaseField {
   public:
     chunk_type arg[key_bits] = {};
     BaseField() {
-        assert( N <= (1 << sizeof(chunk_type)*8 ));
+        assert( N <= (1UL << sizeof(chunk_type)*8 ));
         //assert( key_bits % 8 == 0 && key_bits >= 8);
     }
 
@@ -67,17 +75,6 @@ class BaseField {
 	    arg[i] = field_multiply(arg[i], k);
 	}
     }
-    // void add( const BaseField<N, key_bits> field_elt) {
-    //     for(int i = 0; i < key_bits; ++i) {
-    //         arg[i] = field_add(arg[i], field_elt.arg[i]);
-    //     }
-    // }
-
-    // void remove(const BaseField<N, key_bits> field_elt) {
-    //     for(int i = 0; i < key_bits; ++i) {
-    //         arg[i] = field_add(arg[i], (-1)*field_elt.arg[i]);
-    //     }
-    // }
 
     //checks if all "nits" can be evenly divided by n
     bool can_divide_by(int n) {
@@ -89,19 +86,26 @@ class BaseField {
         return true;
     }
 
-    inline uint8_t field_add(int x, int y) {
-        return ((x + y) % N + N) % N;
+    inline chunk_type field_add(int x, int y) {
+
+	return ((x + y) % N + N) % N;
     }
 
-    inline uint8_t field_multiply(int x, int y) {
+    inline chunk_type field_multiply(int64_t x, int64_t y) {
+        //printf("x: %d, y: %d, x*y: %d\n", x, y, ((x*y) % N + N ) % N);
+	if( x*y < x ) {
+		std::cout << "In field multiply: " <<  x << " * " << y << " = " << x*y << std::endl;
+		exit(1);
+	} 
 	return ((x*y) % N + N) % N;
     }
 
+
     void print_contents() const {
         for(int i = 0; i < key_bits; ++i) {
-            printf("%d", arg[i]);
+            std::cout << arg[i];
         }
-        printf("\n");
+	std::cout << std::endl;
     }
 
     bool operator==( const BaseField<N, key_bits>& other ) const {
@@ -270,7 +274,7 @@ class Field<2, key_type, key_bits> {
     }
 
     void print_contents() const {
-        printf("%lu\n", arg);
+        std::cout << arg << std::endl;
     }
 
     bool is_empty() const {
@@ -337,10 +341,10 @@ class Field<2, std::string, key_bits> {
     void print_contents() const {
         for(int i = 0; i < key_bits/8; ++i) {
             for(int j = 0; j < 8; ++j) {
-                printf("%d", (arg[i] & (1 << j)) != 0);
+                std::cout << ((arg[i] & (1 << j)) != 0);
             }
         }
-        printf("\n");
+        std::cout << std::endl;
     }
 
     bool operator==( const Field<2, std::string, key_bits>& other ) const {
