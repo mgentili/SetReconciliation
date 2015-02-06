@@ -9,7 +9,7 @@ sudo apt-get --assume-yes install pkg-config
 sudo pip install matplotlib
 sudo apt-get --assume-yes install libprotobuf-dev
 
-sudo add-apt-repository ppa:cp/bug-fixes
+sudo add-apt-repository --assume-yes ppa:cp/bug-fixes
 sudo apt-get --assume-yes update
 sudo apt-get --assume-yes upgrade
 
