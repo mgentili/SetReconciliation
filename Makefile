@@ -31,7 +31,9 @@ STRATA=bin/strata_testing
 DIR_SYNC=bin/dir_sync_testing
 NETWORK=bin/network_testing
 HASH=bin/hash_testing
-PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC) $(NETWORK) $(HASH)
+#PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(DIR_SYNC) $(NETWORK) $(HASH)
+
+PROGRAMS=$(BASIC_IBLT) $(MULTI_IBLT) $(TABULATION) $(BASIC_FIELD) $(FINGERPRINT) $(SYNC) $(STRATA) $(NETWORK) $(HASH)
 
 .PHONY: default all tabulation basic_iblt multi_iblt field fingerprint sync strata network dir_sync hash
 default: all

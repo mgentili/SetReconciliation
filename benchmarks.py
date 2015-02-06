@@ -15,9 +15,13 @@ plotdir = 'plot/'
 def getFileName( test_type, subtest_type, file_len, extra = "" ):
 	return "{}{}_{}_{}_{}_{}.res".format( tempdir, test_type, subtest_type, file_len, extra, str(int(time.time())) )
 
-def getBlockIncrement(start_block, end_block, num_trials = 100):
-	diff = end_block - start_block
-	return diff/num_trials
+def getBlockIncrement(start_block, end_block):
+	#diff = end_block - start_block
+	#return diff/num_trials
+	return 10
+
+def getBlockIncrementComplex(start_block, end_block, num_trials = 1000):
+	return (end_block - start_block)/num_trials
 
 def generateRandData( file_len, start_block, end_block, error_prob, num_trials = 1):
 	test_type = 'file_sync'
@@ -46,7 +50,7 @@ def generateBlockData( file_len, start_block, end_block, num_blocks, num_trials 
 			subprocess.call(
 				[
 					filenames[test_type], '--file-len', str(file_len),
-					'--num-blocks', str(num_blocks), '--block-size', str(block_size),
+					'--num-changes', str(num_blocks), '--block-size', str(block_size),
 					'--rsync', "true" 
 				],
 				stdout = fp
@@ -76,7 +80,7 @@ def generateActualData( start_block, end_block, project, tag1, tag2, num_trials 
 	subtest_type='actual'
 	filename = getFileName( test_type, subtest_type, project, "{}_{}".format(tag1, tag2) )
 	for n in xrange(num_trials):
-		for block_size in xrange(start_block, end_block, getBlockIncrement(start_block, end_block)):
+		for block_size in xrange(start_block, end_block, getBlockIncrementComplex(start_block, end_block)):
 			subprocess.call( 
 				[
 					"./generate_similar_tag.sh", project, tag1, tag2
@@ -161,7 +165,7 @@ def generateRandGraph( filename ):
 def generateBlockGraph( filename ):
 	content = parseJson(filename)
 	xs, ys, mins, captions = createXYVals( content )
-	num_blocks = content[0]['num_blocks']
+	num_blocks = content[0]['num_block_changes']
 	file_len = content[0]['file_length']
 	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Block Error Model with {} blocks changed, File Length = {}".format(num_blocks, file_len) , 'filename' : filename}
 	generateGraph( info, xs, ys, captions)
@@ -212,7 +216,7 @@ def main():
 			generateNetworkGraph(networkData)
 
 	if( args['actual'] ):
-		actualData = generateActualData(args['project'], args['tag1'], args['tag2'])
+		actualData = generateActualData(args['block_start'], args['block_end'], args['project'], args['tag1'], args['tag2'])
 		if( args['graphs']):
 			generateActualGraph(actualData, args['project'], args['tag1'], args['tag2'])
 

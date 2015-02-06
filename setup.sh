@@ -7,14 +7,11 @@ sudo apt-get --assume-yes install libpng-dev
 sudo apt-get --assume-yes install libfreetype6-dev
 sudo apt-get --assume-yes install pkg-config
 sudo pip install matplotlib
+sduo apt-get --assume-yes install libprotobuf-dev
 
-wget https://protobuf.googlecode.com/svn/rc/protobuf-2.6.0.tar.gz
-tar -xvf protobuf-2.6.0.tar.gz
-cd protobuf-2.6.0
-./configure
-make
-make install
-cd ../
+sudo add-apt-repository ppa:cp/bug-fixes
+sudo apt-get update
+sudo apt-get upgrade
 
 make
 mkdir tmp/ A/ B/ plot/ bin/ obj/
