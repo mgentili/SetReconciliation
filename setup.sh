@@ -1,7 +1,20 @@
 #!/bin/bash
 
-sudo apt-get install libssl-dev
-sudo apt-get instal libboost-all-dev
+sudo apt-get --assume-yes install libssl-dev
+sudo apt-get --assume-yes install libboost-all-dev
+sudo apt-get --assume-yes install python-pip
+sudo apt-get --assume-yes install libpng-dev
+sudo apt-get --assume-yes install libfreetype6-dev
+sudo apt-get --assume-yes install pkg-config
+sudo pip install matplotlib
+
+wget https://protobuf.googlecode.com/svn/rc/protobuf-2.6.0.tar.gz
+tar -xvf protobuf-2.6.0.tar.gz
+cd protobuf-2.6.0
+./configure
+make
+make install
+cd ../
 
 make
 mkdir tmp/ A/ B/ plot/ bin/ obj/
