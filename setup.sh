@@ -7,11 +7,11 @@ sudo apt-get --assume-yes install libpng-dev
 sudo apt-get --assume-yes install libfreetype6-dev
 sudo apt-get --assume-yes install pkg-config
 sudo pip install matplotlib
-sduo apt-get --assume-yes install libprotobuf-dev
+sudo apt-get --assume-yes install libprotobuf-dev
 
 sudo add-apt-repository ppa:cp/bug-fixes
-sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get --assume-yes update
+sudo apt-get --assume-yes upgrade
 
 make
 mkdir tmp/ A/ B/ plot/ bin/ obj/
