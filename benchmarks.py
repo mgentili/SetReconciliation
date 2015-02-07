@@ -20,7 +20,7 @@ def getBlockIncrement(start_block, end_block):
 	#return diff/num_trials
 	return 10
 
-def getBlockIncrementComplex(start_block, end_block, num_trials = 1000):
+def getBlockIncrementComplex(start_block, end_block, num_trials = 100):
 	return (end_block - start_block)/num_trials
 
 def generateRandData( file_len, start_block, end_block, error_prob, num_trials = 1):
@@ -78,7 +78,9 @@ def generateNetworkData( num_trials = 1):
 def generateActualData( start_block, end_block, project, tag1, tag2, num_trials = 1):
 	test_type = 'file_sync'
 	subtest_type='actual'
+	project = project.split('/')[1]
 	filename = getFileName( test_type, subtest_type, project, "{}_{}".format(tag1, tag2) )
+	fp = open(filename, 'w')
 	for n in xrange(num_trials):
 		for block_size in xrange(start_block, end_block, getBlockIncrementComplex(start_block, end_block)):
 			subprocess.call( 
@@ -172,8 +174,12 @@ def generateBlockGraph( filename ):
 	for i in zip(captions, mins):
 		print "{},{}".format(i[0], i[1])
 
-def generateActualGraph( filename, project, tag1, tag2 ):
+def generateActualGraph( filename ):
 	content = parseJson(filename)
+	tags = filename.split("_")
+	project = tags[-4]
+	tag1 = tags[-3]
+	tag2 = tags[-2]
 	xs, ys, mins, captions = createXYVals( content )
 	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Transferring {} data from tag {} to tag {}".format(project, tag1, tag2) , 'filename' : filename}
 	generateGraph( info, xs, ys, captions)
@@ -196,28 +202,28 @@ def main():
 	parser.add_argument('--project', default='emacs')
 	parser.add_argument('--tag1', default='emacs-24.1')
 	parser.add_argument('--tag2', default='emacs-23.1')
-
+	parser.add_argument('--file')
 	args = vars(parser.parse_args())
-
-	#generateRandGraph( 'tmp/file_sync_rand_1000000_1e-05_1422645193.res' )	
-	if( args['rand']):
-		randData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['error_prob'])
-		if( args['graphs']):
+	
+	if args['graphs']:
+		if args['rand']:
+			generateRandGraph(args['file'])
+		elif args['block']:
+			generateBlockGraph(args['file'])
+		elif args['actual']:
+			generateActualGraph(args['file'])
+	else:
+		if( args['rand']):
+			randData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['error_prob'])
 			generateRandGraph(randData)
-
-	if( args['block']):
-		blockData = generateBlockData(args['file_len'], args['block_start'], args['block_end'], args['num_changes'])
-		if( args['graphs']):
-			generateBlockGraph(blockData)	
-
-	if( args['network'] ):
-		networkData = generateNetworkData()
-		if( args['graphs']):
+		if( args['block']):
+			blockData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['num_changes'])
+			generateBlockGraph(blockData)
+		if( args['network'] ):
+			networkData = generateNetworkData()
 			generateNetworkGraph(networkData)
-
-	if( args['actual'] ):
-		actualData = generateActualData(args['block_start'], args['block_end'], args['project'], args['tag1'], args['tag2'])
-		if( args['graphs']):
+		if( args['actual'] ):
+			actualData = generateActualData(args['block_start'], args['block_end'], args['project'], args['tag1'], args['tag2'])
 			generateActualGraph(actualData, args['project'], args['tag1'], args['tag2'])
 
 main()
