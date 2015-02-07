@@ -21,7 +21,7 @@
 #  define SYNC_DEBUG(x)  do {} while (0)
 #endif
 
-#define FILE_ENCODING_DEBUG 0
+#define FILE_ENCODING_DEBUG 1
 #if FILE_ENCODING_DEBUG
 #  define ENCODING_DEBUG(x)  do { std::cerr << x << std::endl; } while(0)
 #else
@@ -190,8 +190,8 @@ class FileSynchronizer {
   		bool res = resIBLT.peel(my_distinct_keys, cp_distinct_keys);
 		if( !res ) {
   			std::cerr << "Failed to peel, need to retry" << std::endl;
-  			return false;
-			//exit(1);
+  			exit(1)
+			return false;
   		}
 		return true;
   	}
