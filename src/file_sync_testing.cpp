@@ -22,7 +22,7 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	fsync_type file_sync_A(file1, avg_block_size), file_sync_B(file2, avg_block_size);
 	std::string strata_encoding = file_sync_A.send_strata_encoding();
 	int diff_est = file_sync_B.receive_strata_encoding(strata_encoding);
-	std::cout << "Difference estimate is " << diff_est << std::endl;
+	//std::cout << "Difference estimate is " << diff_est << std::endl;
 	std::string iblt_encoding = file_sync_A.send_IBLT_encoding(diff_est);
 	std::string rd2_encoding = file_sync_B.receive_IBLT_encoding(iblt_encoding);
 	file_sync_A.receive_rd2_encoding(rd2_encoding);
@@ -43,10 +43,10 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	std::string file1_compressed = compress_string(file1_string);
 	std::string file2_compressed = compress_string(file2_string);
 	
-	std::vector<uint32_t> encoding = file_sync_B.my_rd2.existing_chunk_encoding;
-	std::string stringified_encoding((char*) encoding.data(), encoding.size());
-	std::cout << "Existing chunk encoding size" << encoding.size() << std::endl;
-	std::cout << "Existing chunk encoding compressed" << compress_string(stringified_encoding).size() << std::endl;	
+	//std::vector<uint32_t> encoding = file_sync_B.my_rd2.existing_chunk_encoding;
+	//std::string stringified_encoding((char*) encoding.data(), encoding.size());
+	//std::cout << "Existing chunk encoding size" << encoding.size() << std::endl;
+	//std::cout << "Existing chunk encoding compressed" << compress_string(stringified_encoding).size() << std::endl;	
 	Json::Value block_size(avg_block_size);
 	Json::Value diff(diff_est), tot_no_strata(total_bytes_no_strata), tot_with_strata(total_bytes);
 	Json::Value f1_sz(file1_size), f2_sz(file2_size);

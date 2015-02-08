@@ -21,7 +21,7 @@
 #  define SYNC_DEBUG(x)  do {} while (0)
 #endif
 
-#define FILE_ENCODING_DEBUG 1
+#define FILE_ENCODING_DEBUG 0
 #if FILE_ENCODING_DEBUG
 #  define ENCODING_DEBUG(x)  do { std::cerr << x << std::endl; } while(0)
 #else
@@ -30,7 +30,7 @@
 
 #define DEFAULT_BLOCK_SIZE 700
 
-template <typename hash_type = uint32_t, typename iblt_type = basicIBLT<hash_type, hash_type> >
+template <typename hash_type = uint32_t, typename iblt_type = basicIBLT<hash_type> >
 class FileSynchronizer {
   public:
   	size_t overlap;
@@ -305,7 +305,7 @@ class FileSynchronizer {
 	template <typename first_type, typename second_type>
 	void sort_mapping(std::unordered_map<first_type, std::vector<second_type> >& mapping) {
 		for(auto it = mapping.begin(); it != mapping.end(); ++it) {
-			std::cout << "Sorting " << it->first << " with size" << it->second.size() << std::endl;
+			//std::cout << "Sorting " << it->first << " with size" << it->second.size() << std::endl;
 			std::sort(it->second.begin(), it->second.end());
 		}
 	}

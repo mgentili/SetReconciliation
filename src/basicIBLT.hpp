@@ -93,7 +93,7 @@ Parameters:
 	hasher: type of hashfunction (should be able to hash keytype)
 **/
 template <typename key_type, 
-	  typename hash_type, 
+	  typename hash_type = uint32_t, 
 		  typename hasher = MurmurHashing<8*sizeof(key_type), hash_type> >
 class basicIBLT {
   public:

@@ -13,7 +13,6 @@ message strata_estimator {
 }
 
 message IBLT {
-//	repeated IBLT_bucket_extended buckets = 1;
 	repeated IBLT_bucket buckets = 1;
 }
 
@@ -24,8 +23,6 @@ message IBLT2 {
 }
 
 message IBLT_bucket_extended {
-	//repeated bool key_sum = 1 [packed=true];
-	//repeated bool hash_sum = 2 [packed=true];
 	required IBLT_bucket bucket = 1;
 	repeated bool has_key = 2 [packed=true];
 }

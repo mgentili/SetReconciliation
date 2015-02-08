@@ -5,7 +5,7 @@
 #include "file_sync.pb.h"
 
 //TODO: Paramaterize by IBLT type?
-template <typename hash_type, typename iblt_type = basicIBLT<hash_type, hash_type> >
+template <typename hash_type, typename iblt_type = basicIBLT<hash_type> >
 //template <typename hash_type, typename iblt_type = multiIBLT<2, hash_type, 8*sizeof(hash_type), hash_type> >
 class StrataEstimator {
   public:
