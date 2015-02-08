@@ -1,5 +1,6 @@
 #include "IBLT_helpers.hpp"
 #include "file_sync.hpp"
+#include "file_sync2.hpp"
 #include "file_sync.pb.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -21,6 +22,7 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	fsync_type file_sync_A(file1, avg_block_size), file_sync_B(file2, avg_block_size);
 	std::string strata_encoding = file_sync_A.send_strata_encoding();
 	int diff_est = file_sync_B.receive_strata_encoding(strata_encoding);
+	std::cout << "Difference estimate is " << diff_est << std::endl;
 	std::string iblt_encoding = file_sync_A.send_IBLT_encoding(diff_est);
 	std::string rd2_encoding = file_sync_B.receive_IBLT_encoding(iblt_encoding);
 	file_sync_A.receive_rd2_encoding(rd2_encoding);
@@ -31,16 +33,20 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	int file1_size = boost::filesystem::file_size(file1);
 	int file2_size = boost::filesystem::file_size(file2); 
 
-	char* buf;
-	load_buffer_with_file(file1.c_str(), &buf);
-	std::string file1_string(buf, file1_size);
-	delete[] buf;
-	load_buffer_with_file(file2.c_str(), &buf);
-	std::string file2_string(buf, file2_size);
-	delete[] buf;
+	std::vector<char> buf;
+	load_buffer_with_file(file1, buf);
+	std::string file1_string(buf.data(), file1_size);
+	buf.clear();
+	load_buffer_with_file(file2, buf);
+	std::string file2_string(buf.data(), file2_size);
+	buf.clear();
 	std::string file1_compressed = compress_string(file1_string);
 	std::string file2_compressed = compress_string(file2_string);
 	
+	std::vector<uint32_t> encoding = file_sync_B.my_rd2.existing_chunk_encoding;
+	std::string stringified_encoding((char*) encoding.data(), encoding.size());
+	std::cout << "Existing chunk encoding size" << encoding.size() << std::endl;
+	std::cout << "Existing chunk encoding compressed" << compress_string(stringified_encoding).size() << std::endl;	
 	Json::Value block_size(avg_block_size);
 	Json::Value diff(diff_est), tot_no_strata(total_bytes_no_strata), tot_with_strata(total_bytes);
 	Json::Value f1_sz(file1_size), f2_sz(file2_size);
@@ -114,16 +120,16 @@ int main(int argc, char* argv[]) {
 		info["test_type"] = test_type;
 		info["file_length"] = file_length;
 		info["error_prob"] = error_probability;
-		generate_random_file(f1.c_str(), file_len);
-		generate_similar_file(f1.c_str(), f2.c_str(), 1-error_prob);
+		generate_random_file(f1, file_len);
+		generate_similar_file(f1, f2, 1-error_prob);
 	} else if( vm.count("num-changes") ) {
 		Json::Value test_type("block"), file_length(file_len), num_block_changes(block_changes);
 		info["test_type"] = test_type;
 		info["file_length"] = file_length;
 		info["num_block_changes"] = num_block_changes;
-		generate_random_file(f1.c_str(), file_len);
-		generate_random_file(f1.c_str(), file_len);
-		generate_block_changed_file(f1.c_str(), f2.c_str(), block_changes, block_changes_size);
+		generate_random_file(f1, file_len);
+		generate_random_file(f1, file_len);
+		generate_block_changed_file(f1, f2, block_changes, block_changes_size);
 	} else {
 		Json::Value test_type("actual"), file1(f1), file2(f2);
 		info["test_type"] = test_type;
@@ -133,7 +139,7 @@ int main(int argc, char* argv[]) {
 
 	testFullProtocol(f1, f2, avg_block_size);
 
-	if(vm.count("rsync") ) {
+	if( use_rsync ) {
 		testRsync(f1, f2, avg_block_size);
 	}
 

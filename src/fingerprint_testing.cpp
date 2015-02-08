@@ -12,7 +12,7 @@ class FingerprintTester {
 	FingerprintTester(size_t avg_block_size): 
 		avg_block_size(avg_block_size), f(avg_block_size) {}
 
-	void basicTest(const char* filename) {
+	void basicTest(const std::string& filename) {
 		std::vector<pair<hash_type, size_t> > hashes;
 		size_t file_size = f.get_fingerprint(filename, hashes);
 		// for(size_t i = 0; i < hashes.size(); ++i) {
@@ -29,7 +29,7 @@ class FingerprintTester {
 	}
 
 	// computes the jaccard coefficient of two sets
-	void comparisonTest(const char* f1, const char* f2) {
+	void comparisonTest(const std::string& f1, const std::string& f2) {
 		std::vector<pair<hash_type, size_t> > hashes1, hashes2;
 		std::unordered_set<hash_type> hash_set1, hash_set2, hash_union, hash_intersection;
 		f.get_fingerprint(f1, hashes1);
@@ -49,7 +49,7 @@ class FingerprintTester {
 		std::cout << "Similarity is" << (double) hash_intersection.size()/ hash_union.size() << std::endl; 
 	}
 
-	void fileDigest(const char* f1) {
+	void fileDigest(const std::string& f1) {
 		std::vector<pair<hash_type, size_t> > hashes;
 		f.digest_file(f1, hashes);
 		// for(size_t i = 0; i < hashes.size(); ++i) {
@@ -57,7 +57,7 @@ class FingerprintTester {
 		// }
 	}
 
-	void fileDigestComparison(const char* f1, const char* f2) {
+	void fileDigestComparison(const std::string& f1, const std::string& f2) {
 		std::vector<pair<hash_type, size_t> > hashes1, hashes2;
 		std::unordered_set<hash_type> hash_set1, hash_set2, hash_union, hash_intersection;
 		f.digest_file(f1, hashes1);
@@ -77,8 +77,8 @@ int main() {
 	const size_t avg_block_size = 100;
 	typedef uint32_t hash_type;
 	FingerprintTester<hash_type> ft(avg_block_size);
-	const char* file1 = "tmp.txt";
-	const char* file2 = "tmp2.txt";
+	const std::string file1 = "tmp.txt";
+	const std::string file2 = "tmp2.txt";
 	double similarity = 0.999;
 	int file_len = 1000000;
 	generate_random_file(file1, file_len);

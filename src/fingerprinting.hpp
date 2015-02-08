@@ -20,12 +20,12 @@ class RollingHash {
   public:
   	static const uint32_t p = 77711;
   	size_t kgrams;
-  	char* buf;
+  	std::vector<char> buf;
   	size_t size;
   	size_t curr_pos;
   	hash_type last_hash;
 
-  	RollingHash(size_t kgrams): kgrams(kgrams), buf(NULL), size(0), curr_pos(0), last_hash(0) {}
+  	RollingHash(size_t kgrams): kgrams(kgrams), size(0), curr_pos(0), last_hash(0) {}
   	~RollingHash() {
   		cleanup();
   	}
@@ -40,13 +40,13 @@ class RollingHash {
 	  else return x * tmp * tmp;
 	}
 
-  	size_t load_file(const char* filename) {
+  	size_t load_file(const std::string& filename) {
   		cleanup();
-  		return( load_buffer_with_file(filename, &buf) );
+  		return( load_buffer_with_file(filename, buf) );
 	}
 
 	void cleanup() {
-		delete[] buf;
+		buf.clear();
 		curr_pos = 0;
 		last_hash = 0;
 		size = 0;
@@ -55,7 +55,7 @@ class RollingHash {
 	hash_type next_hash() {
 		hash_type ret;
 		if( curr_pos < kgrams )
-			ret = hash(buf, curr_pos);
+			ret = hash(buf.data(), curr_pos);
 		else
 			ret = hash(last_hash, buf[curr_pos-kgrams], buf[curr_pos]);
 		last_hash = ret;
@@ -95,7 +95,7 @@ class Fingerprinter {
 
   	// uses winnowing to determine set of hashes for file
   	// returns the size of the hashed file
-	size_t winnow(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+	size_t winnow(const std::string& filename, vector<pair<hash_type, size_t> >& hashes) {
 		size_t w = 2*avg_block_size - 1;
 		
 		h = new hash_type[w];
@@ -134,7 +134,7 @@ class Fingerprinter {
 		return file_size;
 	}
 
-	size_t modding(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+	size_t modding(const std::string& filename, vector<pair<hash_type, size_t> >& hashes) {
 		size_t p = avg_block_size;
 		size_t file_size = hasher.load_file(filename);
 		for(size_t i = 0; i < file_size; ++i) {
@@ -146,25 +146,23 @@ class Fingerprinter {
 		return file_size;
 	}
 
-	size_t get_fingerprint(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+	size_t get_fingerprint(const std::string& filename, vector<pair<hash_type, size_t> >& hashes) {
 		
 		return winnow(filename, hashes);
 		//return modding(filename, 10, hashes);
 	}
 
+	size_t digest_file(const std::string& filename, vector<pair<hash_type, size_t> >& file_hashes) {
+		return digest_file(filename, file_hashes, 0);
+	}
 	// processes a file, returning a set of hashes of blocks and the corresponding block lengths
-	size_t digest_file(const char* filename, vector<pair<hash_type, size_t> >& file_hashes) {
+	size_t digest_file(const std::string& filename, vector<pair<hash_type, size_t> >& file_hashes, size_t overlap_len) {
 		vector<pair<hash_type, size_t> > fp_hashes;
 		size_t file_size = get_fingerprint(filename, fp_hashes);
 		fp_hashes.push_back(make_pair(-1, file_size)); // add placeholder for end of file
-		FILE* fp = fopen(filename, "r");
-		if( !fp ) {
-			cout << "Unable to open file" << endl;
-			exit(1);
-		}
-		char* buf = new char[file_size];
-		fread(buf, 1, file_size, fp);
-		fclose(fp);
+		
+		std::vector<char> buf;
+		load_buffer_with_file(filename, buf);
 
 		std::pair<hash_type, size_t> curr_pair;
 		size_t i = 0;
@@ -176,8 +174,8 @@ class Fingerprinter {
 
 		for(; i < fp_hashes.size(); ++i) {	
 			size_t curr_len = fp_hashes[i].second - curr_pos;
-
-			curr_pair = make_pair(HashUtil::MurmurHash64A(&buf[curr_pos], curr_len, 0), curr_len);
+			size_t len_plus_offset = (i == (fp_hashes.size() - 1)) ? curr_len : (curr_len + overlap_len);
+			curr_pair = make_pair(HashUtil::MurmurHash64A(&buf[curr_pos], len_plus_offset, 0), curr_len);
 #if FINGERPRINT_DEBUG
 			std::string curr_string(&buf[curr_pos], curr_len);
 			if( hash_to_string.find(curr_pair.first) != hash_to_string.end() && hash_to_string[curr_pair.first] != curr_string) {
@@ -191,12 +189,13 @@ class Fingerprinter {
 			file_hashes.push_back(curr_pair);
 			curr_pos += curr_len;
 		}
-		delete[] buf;
+		buf.clear();
+		hasher.cleanup();
 		return file_size;
 	}
 
 	// TODO: implement
-	size_t two_way_min(const char* filename, vector<pair<hash_type, size_t> >& hashes) {
+	size_t two_way_min(const std::string& filename, vector<pair<hash_type, size_t> >& hashes) {
 	//	
 	//	h = new hash_type[w];
 

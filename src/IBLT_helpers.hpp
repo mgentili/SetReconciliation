@@ -9,6 +9,7 @@
 #include <random>
 #include <iostream>
 #include <sys/stat.h>
+#include "hash_util.hpp"
 
 #define DEBUG 1
 
@@ -46,18 +47,20 @@ void checkResults(std::unordered_map<key_type, std::vector<int> >& expected,
 	}
 }
 
-size_t load_buffer_with_file(const char* filename, char** buf);
+size_t load_buffer_with_file(const std::string& filename, std::vector<char>& buf);
 
-size_t get_file_size(const char* filename);
+size_t get_file_size(const std::string& filename);
+
+std::string get_SHAHash(const std::string& filename);
 
 // generate_random_file creates a file with len alphanumeric characters
-void generate_random_file(const char* filename, size_t len);
+void generate_random_file(const std::string& filename, size_t len);
 
 // generate_similar_file creates a file that has on average pct_similarity characters the same 
 // and in the same order as the old_file
-void generate_similar_file(const char* old_file, const char* new_file, double pct_similarity);
+void generate_similar_file(const std::string& old_file, const std::string& new_file, double pct_similarity);
 
-void generate_block_changed_file(const char* old_file, const char* new_file, size_t num_new_blocks, size_t block_size);
+void generate_block_changed_file(const std::string& old_file, const std::string& new_file, size_t num_new_blocks, size_t block_size);
 
 template <typename key_type, int key_bits = 8*sizeof(key_type)>
 class keyGenerator {

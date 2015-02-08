@@ -217,7 +217,7 @@ class multiIBLT {
 	}
 
 	void setup() {
-		while( num_buckets % num_hashfns != 0 && num_buckets == 0) {
+		while( num_buckets % num_hashfns != 0 || num_buckets == 0) {
 			++num_buckets;
 		}
 		assert(num_buckets % num_hashfns == 0);
@@ -236,10 +236,6 @@ class multiIBLT {
 						num_hashfns(cp_IBLT.num_hashfns),
 						subIBLTs(num_hashfns),
 						sub_hashers(num_hashfns) {
-//		num_buckets = cp_IBLT.num_buckets;
-//		num_hashfns = cp_IBLT.num_hashfns;
-//		subIBLTs.resize(num_hashfns);
-//		sub_hashers.resize(num_hashfns)
 		setup();
 		add(cp_IBLT);
 	}

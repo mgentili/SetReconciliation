@@ -93,7 +93,7 @@ Parameters:
 	hasher: type of hashfunction (should be able to hash keytype)
 **/
 template <typename key_type, 
-		  typename hash_type, 
+	  typename hash_type, 
 		  typename hasher = MurmurHashing<8*sizeof(key_type), hash_type> >
 class basicIBLT {
   public:
@@ -112,7 +112,7 @@ class basicIBLT {
 							num_hashfns(num_hashfns),
 							subIBLTs(num_hashfns),
 							sub_hashers(num_hashfns) {
-		while( num_buckets % num_hashfns != 0) {
+		while( num_buckets % num_hashfns != 0 || num_buckets == 0) {
 			++num_buckets;
 		}
 		assert(num_buckets % num_hashfns == 0);

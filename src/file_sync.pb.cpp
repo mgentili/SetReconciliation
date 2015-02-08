@@ -49,10 +49,12 @@ void protobuf_AssignDesc_file_5fsync_2eproto() {
       "file_sync.proto");
   GOOGLE_CHECK(file != NULL);
   Round2_descriptor_ = file->message_type(0);
-  static const int Round2_offsets_[3] = {
+  static const int Round2_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Round2, chunk_exists_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Round2, hash_exists_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Round2, new_chunk_info_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Round2, existing_chunk_encoding_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Round2, shahash_),
   };
   Round2_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -195,18 +197,19 @@ void protobuf_AddDesc_file_5fsync_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\017file_sync.proto\022\tfile_sync\"_\n\006Round2\022\030"
-    "\n\014chunk_exists\030\001 \003(\010B\002\020\001\022\026\n\016new_chunk_in"
-    "fo\030\003 \003(\014\022#\n\027existing_chunk_encoding\030\004 \003("
-    "\rB\002\020\001\"4\n\020strata_estimator\022 \n\006strata\030\001 \003("
-    "\0132\020.file_sync.IBLT2\"/\n\004IBLT\022\'\n\007buckets\030\001"
-    " \003(\0132\026.file_sync.IBLT_bucket\"E\n\005IBLT2\022\023\n"
-    "\007key_sum\030\001 \003(\004B\002\020\001\022\024\n\010hash_sum\030\002 \003(\004B\002\020\001"
-    "\022\021\n\005count\030\003 \003(\004B\002\020\001\"S\n\024IBLT_bucket_exten"
-    "ded\022&\n\006bucket\030\001 \002(\0132\026.file_sync.IBLT_buc"
-    "ket\022\023\n\007has_key\030\002 \003(\010B\002\020\001\"\?\n\013IBLT_bucket\022"
-    "\017\n\007key_sum\030\001 \002(\r\022\020\n\010hash_sum\030\002 \002(\r\022\r\n\005co"
-    "unt\030\003 \002(\r", 449);
+    "\n\017file_sync.proto\022\tfile_sync\"\211\001\n\006Round2\022"
+    "\030\n\014chunk_exists\030\001 \003(\010B\002\020\001\022\027\n\013hash_exists"
+    "\030\002 \003(\010B\002\020\001\022\026\n\016new_chunk_info\030\003 \003(\014\022#\n\027ex"
+    "isting_chunk_encoding\030\004 \003(\rB\002\020\001\022\017\n\007SHAHa"
+    "sh\030\005 \001(\014\"4\n\020strata_estimator\022 \n\006strata\030\001"
+    " \003(\0132\020.file_sync.IBLT2\"/\n\004IBLT\022\'\n\007bucket"
+    "s\030\001 \003(\0132\026.file_sync.IBLT_bucket\"E\n\005IBLT2"
+    "\022\023\n\007key_sum\030\001 \003(\004B\002\020\001\022\024\n\010hash_sum\030\002 \003(\004B"
+    "\002\020\001\022\021\n\005count\030\003 \003(\rB\002\020\001\"S\n\024IBLT_bucket_ex"
+    "tended\022&\n\006bucket\030\001 \002(\0132\026.file_sync.IBLT_"
+    "bucket\022\023\n\007has_key\030\002 \003(\010B\002\020\001\"\?\n\013IBLT_buck"
+    "et\022\017\n\007key_sum\030\001 \002(\r\022\020\n\010hash_sum\030\002 \002(\r\022\r\n"
+    "\005count\030\003 \002(\r", 492);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "file_sync.proto", &protobuf_RegisterTypes);
   Round2::default_instance_ = new Round2();
@@ -235,8 +238,10 @@ struct StaticDescriptorInitializer_file_5fsync_2eproto {
 
 #ifndef _MSC_VER
 const int Round2::kChunkExistsFieldNumber;
+const int Round2::kHashExistsFieldNumber;
 const int Round2::kNewChunkInfoFieldNumber;
 const int Round2::kExistingChunkEncodingFieldNumber;
+const int Round2::kSHAHashFieldNumber;
 #endif  // !_MSC_VER
 
 Round2::Round2()
@@ -255,6 +260,7 @@ Round2::Round2(const Round2& from)
 
 void Round2::SharedCtor() {
   _cached_size_ = 0;
+  shahash_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -263,6 +269,9 @@ Round2::~Round2() {
 }
 
 void Round2::SharedDtor() {
+  if (shahash_ != &::google::protobuf::internal::kEmptyString) {
+    delete shahash_;
+  }
   if (this != default_instance_) {
   }
 }
@@ -289,7 +298,15 @@ Round2* Round2::New() const {
 }
 
 void Round2::Clear() {
+  if (_has_bits_[4 / 32] & (0xffu << (4 % 32))) {
+    if (has_shahash()) {
+      if (shahash_ != &::google::protobuf::internal::kEmptyString) {
+        shahash_->clear();
+      }
+    }
+  }
   chunk_exists_.Clear();
+  hash_exists_.Clear();
   new_chunk_info_.Clear();
   existing_chunk_encoding_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -315,6 +332,27 @@ bool Round2::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
                  1, 10, input, this->mutable_chunk_exists())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_hash_exists;
+        break;
+      }
+
+      // repeated bool hash_exists = 2 [packed = true];
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_hash_exists:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, this->mutable_hash_exists())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 1, 18, input, this->mutable_hash_exists())));
         } else {
           goto handle_uninterpreted;
         }
@@ -354,6 +392,20 @@ bool Round2::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(42)) goto parse_SHAHash;
+        break;
+      }
+
+      // optional bytes SHAHash = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_SHAHash:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_shahash()));
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -386,6 +438,16 @@ void Round2::SerializeWithCachedSizes(
       this->chunk_exists(i), output);
   }
 
+  // repeated bool hash_exists = 2 [packed = true];
+  if (this->hash_exists_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_hash_exists_cached_byte_size_);
+  }
+  for (int i = 0; i < this->hash_exists_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteBoolNoTag(
+      this->hash_exists(i), output);
+  }
+
   // repeated bytes new_chunk_info = 3;
   for (int i = 0; i < this->new_chunk_info_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
@@ -400,6 +462,12 @@ void Round2::SerializeWithCachedSizes(
   for (int i = 0; i < this->existing_chunk_encoding_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
       this->existing_chunk_encoding(i), output);
+  }
+
+  // optional bytes SHAHash = 5;
+  if (has_shahash()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+      5, this->shahash(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -424,6 +492,20 @@ void Round2::SerializeWithCachedSizes(
       WriteBoolNoTagToArray(this->chunk_exists(i), target);
   }
 
+  // repeated bool hash_exists = 2 [packed = true];
+  if (this->hash_exists_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      2,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _hash_exists_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->hash_exists_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteBoolNoTagToArray(this->hash_exists(i), target);
+  }
+
   // repeated bytes new_chunk_info = 3;
   for (int i = 0; i < this->new_chunk_info_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -444,6 +526,13 @@ void Round2::SerializeWithCachedSizes(
       WriteUInt32NoTagToArray(this->existing_chunk_encoding(i), target);
   }
 
+  // optional bytes SHAHash = 5;
+  if (has_shahash()) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        5, this->shahash(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -454,6 +543,15 @@ void Round2::SerializeWithCachedSizes(
 int Round2::ByteSize() const {
   int total_size = 0;
 
+  if (_has_bits_[4 / 32] & (0xffu << (4 % 32))) {
+    // optional bytes SHAHash = 5;
+    if (has_shahash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->shahash());
+    }
+
+  }
   // repeated bool chunk_exists = 1 [packed = true];
   {
     int data_size = 0;
@@ -464,6 +562,20 @@ int Round2::ByteSize() const {
     }
     GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
     _chunk_exists_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
+  // repeated bool hash_exists = 2 [packed = true];
+  {
+    int data_size = 0;
+    data_size = 1 * this->hash_exists_size();
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _hash_exists_cached_byte_size_ = data_size;
     GOOGLE_SAFE_CONCURRENT_WRITES_END();
     total_size += data_size;
   }
@@ -518,8 +630,14 @@ void Round2::MergeFrom(const ::google::protobuf::Message& from) {
 void Round2::MergeFrom(const Round2& from) {
   GOOGLE_CHECK_NE(&from, this);
   chunk_exists_.MergeFrom(from.chunk_exists_);
+  hash_exists_.MergeFrom(from.hash_exists_);
   new_chunk_info_.MergeFrom(from.new_chunk_info_);
   existing_chunk_encoding_.MergeFrom(from.existing_chunk_encoding_);
+  if (from._has_bits_[4 / 32] & (0xffu << (4 % 32))) {
+    if (from.has_shahash()) {
+      set_shahash(from.shahash());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -543,8 +661,10 @@ bool Round2::IsInitialized() const {
 void Round2::Swap(Round2* other) {
   if (other != this) {
     chunk_exists_.Swap(&other->chunk_exists_);
+    hash_exists_.Swap(&other->hash_exists_);
     new_chunk_info_.Swap(&other->new_chunk_info_);
     existing_chunk_encoding_.Swap(&other->existing_chunk_encoding_);
+    std::swap(shahash_, other->shahash_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -1081,19 +1201,19 @@ bool IBLT2::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated uint64 count = 3 [packed = true];
+      // repeated uint32 count = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_count:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, this->mutable_count())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  1, 26, input, this->mutable_count())));
         } else {
           goto handle_uninterpreted;
@@ -1140,13 +1260,13 @@ void IBLT2::SerializeWithCachedSizes(
       this->hash_sum(i), output);
   }
 
-  // repeated uint64 count = 3 [packed = true];
+  // repeated uint32 count = 3 [packed = true];
   if (this->count_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_count_cached_byte_size_);
   }
   for (int i = 0; i < this->count_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
       this->count(i), output);
   }
 
@@ -1186,7 +1306,7 @@ void IBLT2::SerializeWithCachedSizes(
       WriteUInt64NoTagToArray(this->hash_sum(i), target);
   }
 
-  // repeated uint64 count = 3 [packed = true];
+  // repeated uint32 count = 3 [packed = true];
   if (this->count_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       3,
@@ -1197,7 +1317,7 @@ void IBLT2::SerializeWithCachedSizes(
   }
   for (int i = 0; i < this->count_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt64NoTagToArray(this->count(i), target);
+      WriteUInt32NoTagToArray(this->count(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1244,12 +1364,12 @@ int IBLT2::ByteSize() const {
     total_size += data_size;
   }
 
-  // repeated uint64 count = 3 [packed = true];
+  // repeated uint32 count = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->count_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        UInt64Size(this->count(i));
+        UInt32Size(this->count(i));
     }
     if (data_size > 0) {
       total_size += 1 +

@@ -1,32 +1,36 @@
 #include "IBLT_helpers.hpp"
 
-size_t load_buffer_with_file(const char* filename, char** buf) {
-	FILE* fp = fopen(filename, "r");
+
+size_t load_buffer_with_file(const std::string& filename, std::vector<char>& buffer) {
+	size_t size = get_file_size(filename);
+
+	FILE* fp = fopen(filename.c_str(), "r");
 	if( !fp ) {
 		std::cerr << "Unable to open file " << filename << std::endl;
 		exit(1);
 	}
-
-	struct stat st;
-	stat(filename, &st);
-	size_t size = st.st_size;
-	*buf = new char[size];
-	fread(*buf, 1, size, fp);
+	buffer.resize(size);
+	fread(buffer.data(), 1, size, fp);
 	fclose(fp);
 	return size;
 }
 
-size_t get_file_size(const char* filename) {
-	FILE* fp1 = fopen(filename, "r");
+size_t get_file_size(const std::string& filename) {
+	FILE* fp1 = fopen(filename.c_str(), "r");
 	fseek(fp1, 0, SEEK_END);
 	size_t file_size = ftell(fp1);
 	fclose(fp1);
 	return file_size;
 }
 
+std::string get_SHAHash(const std::string& filename) {
+	std::vector<char> buf;
+	load_buffer_with_file(filename, buf);
+	return HashUtil::SHA1Hash( buf.data(), buf.size());
+}
 // generate_random_file creates a file with len alphanumeric characters
-void generate_random_file(const char* filename, size_t len) {
-	FILE* fp = fopen(filename, "w");
+void generate_random_file(const std::string& filename, size_t len) {
+	FILE* fp = fopen(filename.c_str(), "w");
 	if( !fp ) {
 		std::cout << "failed to open file" << std::endl;
 		exit(1);
@@ -40,9 +44,9 @@ void generate_random_file(const char* filename, size_t len) {
 
 // generate_similar_file creates a file that has on average pct_similarity characters the same 
 // and in the same order as the old_file
-void generate_similar_file(const char* old_file, const char* new_file, double pct_similarity) {
-	FILE* fp1 = fopen(old_file, "r");
-	FILE* fp2 = fopen(new_file, "w");
+void generate_similar_file(const std::string& old_file, const std::string& new_file, double pct_similarity) {
+	FILE* fp1 = fopen(old_file.c_str(), "r");
+	FILE* fp2 = fopen(new_file.c_str(), "w");
 	size_t sim = (size_t) (pct_similarity * 100000);
 	keyGenerator<uint64_t> kg;
 	if( !fp1 || !fp2 ) {
@@ -61,11 +65,11 @@ void generate_similar_file(const char* old_file, const char* new_file, double pc
 	fclose(fp2);
 }
 
-void generate_block_changed_file(const char* old_file, const char* new_file, size_t num_new_blocks, size_t block_size) {
+void generate_block_changed_file(const std::string& old_file, const std::string& new_file, size_t num_new_blocks, size_t block_size) {
 	keyGenerator<uint64_t> kg;
 	std::unordered_set<size_t> start_changes;
 		
-	FILE* fp1 = fopen(old_file, "r");
+	FILE* fp1 = fopen(old_file.c_str(), "r");
 	size_t file_size = get_file_size(old_file);
 
 	while( start_changes.size() != num_new_blocks ) {
@@ -74,7 +78,7 @@ void generate_block_changed_file(const char* old_file, const char* new_file, siz
 
 			
 
-	FILE* fp2 = fopen(new_file, "w");
+	FILE* fp2 = fopen(new_file.c_str(), "w");
 
 	if( !fp1 || !fp2 ) {
 		std::cout << "failed to open file" << std::endl;

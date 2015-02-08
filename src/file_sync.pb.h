@@ -108,6 +108,18 @@ class Round2 : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< bool >*
       mutable_chunk_exists();
 
+  // repeated bool hash_exists = 2 [packed = true];
+  inline int hash_exists_size() const;
+  inline void clear_hash_exists();
+  static const int kHashExistsFieldNumber = 2;
+  inline bool hash_exists(int index) const;
+  inline void set_hash_exists(int index, bool value);
+  inline void add_hash_exists(bool value);
+  inline const ::google::protobuf::RepeatedField< bool >&
+      hash_exists() const;
+  inline ::google::protobuf::RepeatedField< bool >*
+      mutable_hash_exists();
+
   // repeated bytes new_chunk_info = 3;
   inline int new_chunk_info_size() const;
   inline void clear_new_chunk_info();
@@ -136,19 +148,36 @@ class Round2 : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_existing_chunk_encoding();
 
+  // optional bytes SHAHash = 5;
+  inline bool has_shahash() const;
+  inline void clear_shahash();
+  static const int kSHAHashFieldNumber = 5;
+  inline const ::std::string& shahash() const;
+  inline void set_shahash(const ::std::string& value);
+  inline void set_shahash(const char* value);
+  inline void set_shahash(const void* value, size_t size);
+  inline ::std::string* mutable_shahash();
+  inline ::std::string* release_shahash();
+  inline void set_allocated_shahash(::std::string* shahash);
+
   // @@protoc_insertion_point(class_scope:file_sync.Round2)
  private:
+  inline void set_has_shahash();
+  inline void clear_has_shahash();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedField< bool > chunk_exists_;
   mutable int _chunk_exists_cached_byte_size_;
+  ::google::protobuf::RepeatedField< bool > hash_exists_;
+  mutable int _hash_exists_cached_byte_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> new_chunk_info_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > existing_chunk_encoding_;
   mutable int _existing_chunk_encoding_cached_byte_size_;
+  ::std::string* shahash_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_file_5fsync_2eproto();
   friend void protobuf_AssignDesc_file_5fsync_2eproto();
@@ -407,16 +436,16 @@ class IBLT2 : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_hash_sum();
 
-  // repeated uint64 count = 3 [packed = true];
+  // repeated uint32 count = 3 [packed = true];
   inline int count_size() const;
   inline void clear_count();
   static const int kCountFieldNumber = 3;
-  inline ::google::protobuf::uint64 count(int index) const;
-  inline void set_count(int index, ::google::protobuf::uint64 value);
-  inline void add_count(::google::protobuf::uint64 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+  inline ::google::protobuf::uint32 count(int index) const;
+  inline void set_count(int index, ::google::protobuf::uint32 value);
+  inline void add_count(::google::protobuf::uint32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
       count() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_count();
 
   // @@protoc_insertion_point(class_scope:file_sync.IBLT2)
@@ -428,7 +457,7 @@ class IBLT2 : public ::google::protobuf::Message {
   mutable int _key_sum_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > hash_sum_;
   mutable int _hash_sum_cached_byte_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > count_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > count_;
   mutable int _count_cached_byte_size_;
 
   mutable int _cached_size_;
@@ -673,6 +702,31 @@ Round2::mutable_chunk_exists() {
   return &chunk_exists_;
 }
 
+// repeated bool hash_exists = 2 [packed = true];
+inline int Round2::hash_exists_size() const {
+  return hash_exists_.size();
+}
+inline void Round2::clear_hash_exists() {
+  hash_exists_.Clear();
+}
+inline bool Round2::hash_exists(int index) const {
+  return hash_exists_.Get(index);
+}
+inline void Round2::set_hash_exists(int index, bool value) {
+  hash_exists_.Set(index, value);
+}
+inline void Round2::add_hash_exists(bool value) {
+  hash_exists_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< bool >&
+Round2::hash_exists() const {
+  return hash_exists_;
+}
+inline ::google::protobuf::RepeatedField< bool >*
+Round2::mutable_hash_exists() {
+  return &hash_exists_;
+}
+
 // repeated bytes new_chunk_info = 3;
 inline int Round2::new_chunk_info_size() const {
   return new_chunk_info_.size();
@@ -740,6 +794,76 @@ Round2::existing_chunk_encoding() const {
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 Round2::mutable_existing_chunk_encoding() {
   return &existing_chunk_encoding_;
+}
+
+// optional bytes SHAHash = 5;
+inline bool Round2::has_shahash() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Round2::set_has_shahash() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Round2::clear_has_shahash() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Round2::clear_shahash() {
+  if (shahash_ != &::google::protobuf::internal::kEmptyString) {
+    shahash_->clear();
+  }
+  clear_has_shahash();
+}
+inline const ::std::string& Round2::shahash() const {
+  return *shahash_;
+}
+inline void Round2::set_shahash(const ::std::string& value) {
+  set_has_shahash();
+  if (shahash_ == &::google::protobuf::internal::kEmptyString) {
+    shahash_ = new ::std::string;
+  }
+  shahash_->assign(value);
+}
+inline void Round2::set_shahash(const char* value) {
+  set_has_shahash();
+  if (shahash_ == &::google::protobuf::internal::kEmptyString) {
+    shahash_ = new ::std::string;
+  }
+  shahash_->assign(value);
+}
+inline void Round2::set_shahash(const void* value, size_t size) {
+  set_has_shahash();
+  if (shahash_ == &::google::protobuf::internal::kEmptyString) {
+    shahash_ = new ::std::string;
+  }
+  shahash_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Round2::mutable_shahash() {
+  set_has_shahash();
+  if (shahash_ == &::google::protobuf::internal::kEmptyString) {
+    shahash_ = new ::std::string;
+  }
+  return shahash_;
+}
+inline ::std::string* Round2::release_shahash() {
+  clear_has_shahash();
+  if (shahash_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = shahash_;
+    shahash_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void Round2::set_allocated_shahash(::std::string* shahash) {
+  if (shahash_ != &::google::protobuf::internal::kEmptyString) {
+    delete shahash_;
+  }
+  if (shahash) {
+    set_has_shahash();
+    shahash_ = shahash;
+  } else {
+    clear_has_shahash();
+    shahash_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
 }
 
 // -------------------------------------------------------------------
@@ -854,27 +978,27 @@ IBLT2::mutable_hash_sum() {
   return &hash_sum_;
 }
 
-// repeated uint64 count = 3 [packed = true];
+// repeated uint32 count = 3 [packed = true];
 inline int IBLT2::count_size() const {
   return count_.size();
 }
 inline void IBLT2::clear_count() {
   count_.Clear();
 }
-inline ::google::protobuf::uint64 IBLT2::count(int index) const {
+inline ::google::protobuf::uint32 IBLT2::count(int index) const {
   return count_.Get(index);
 }
-inline void IBLT2::set_count(int index, ::google::protobuf::uint64 value) {
+inline void IBLT2::set_count(int index, ::google::protobuf::uint32 value) {
   count_.Set(index, value);
 }
-inline void IBLT2::add_count(::google::protobuf::uint64 value) {
+inline void IBLT2::add_count(::google::protobuf::uint32 value) {
   count_.Add(value);
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
 IBLT2::count() const {
   return count_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 IBLT2::mutable_count() {
   return &count_;
 }
