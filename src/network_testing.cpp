@@ -1,6 +1,10 @@
 #include "network.hpp"
 #include "IBLT_helpers.hpp"
 #include <iostream>
+#include "json/json.h"
+
+Json::Value info;
+Json::StyledWriter writer;
 
 template <typename key_type>
 void printPeeledKeys(std::vector<std::unordered_set<key_type>>& peeled_keys) {
@@ -29,14 +33,24 @@ double percentSuccessfullyPeeled(std::vector<std::unordered_set<key_type>>& peel
 		}
 		numer += curr_count;
 	}
-	std::cout << ",failed_keys=" << denom-numer << 
-		     ",failed_parties=" << failed_parties << 
-		     ",pct_transmitted=" << (double) numer/denom << 
-	std::endl;
+	Json::Value num_failed_keys(denom-numer), num_failed_parties(failed_parties), pct_transmitted((double) numer/denom);
+	info["failed_keys"] = num_failed_keys;
+	info["num_failed_parties"] = num_failed_parties;
+	info["pct_transmitted"] = pct_transmitted;
 
 	return( numer/denom );
 }
 
+template <typename key_type>
+void processPeeledKeys(std::vector<std::unordered_set<key_type> >& peeled_keys, size_t num_distinct_keys ) {
+	Json::Value failed_array;
+	for(auto it = peeled_keys.begin(); it != peeled_keys.end(); ++it ) {
+		Json::Value new_val((int) (num_distinct_keys - it->size()));
+		failed_array.append(new_val);
+	}
+
+	info["nodes"] = failed_array;
+}
 template <int n_nodes>
 void testCompleteNetwork2() {
 	typedef uint64_t key_type;
@@ -54,15 +68,8 @@ void testCompleteNetwork2() {
 	}
 	std::unordered_set<key_type> distinct_keys;
 	kh.distinct_keys(key_assignments, distinct_keys);
-	//printPeeledKeys<key_type>(key_assignments);
-	std::cout << "distinct_keys=" << distinct_keys.size();
 	net.setup(key_assignments);
 	
-//	std::cout << "Initial peeling: " << std::endl;
-//	net.peel_keys(init_peeled_keys);
-//	printPeeledKeys<key_type>(init_peeled_keys);
-//
-
 	while( !net.all_messages_received() ) {
 		net.run_iter();
 	}
@@ -71,58 +78,31 @@ void testCompleteNetwork2() {
 	if( !net.peel_keys(peeled_keys) ) {
 		std::cout << "Failed to peel keys for all nodes" << std::endl;
 	}
-	//printPeeledKeys<key_type>(peeled_keys);
-	std::cout << ",num_rounds=" << net.iter;
-	percentSuccessfullyPeeled<key_type>(peeled_keys, distinct_keys);
-
-
+	
+	
+	Json::Value num_distinct_keys((int) distinct_keys.size()), num_rounds((int) net.iter);
+	Json::Value prime_val(net.nodes[0]->get_prime());
+	info["num_distinct_keys"] = num_distinct_keys;
+	info["num_rounds"] = num_rounds;
+	info["prime"] = prime_val;
+	processPeeledKeys<key_type>(peeled_keys, distinct_keys.size());
+	percentSuccessfullyPeeled<key_type>(peeled_keys,distinct_keys);
+	std::cout << writer.write( info ) << std::endl;
+	info = Json::Value::null;
 }
-//
-//void testCompleteNetwork() {
-//	const int n_nodes = 100;
-//	const int set_diff = 50;
-//	typedef uint32_t key_type;
-//	typedef GossipNetwork<n_nodes, random_network> net_type;
-//	
-//	net_type net(set_diff);	
-//	keyHandler<key_type> kh; 
-//	std::vector<std::unordered_set<key_type>> key_assignments(n_nodes), init_peeled_keys(n_nodes);
-//	double insert_prob = 0.1;
-//	kh.assign_keys(insert_prob, n_nodes, set_diff/2, key_assignments);
-//	std::unordered_set<key_type> distinct_keys;
-//	kh.distinct_keys(key_assignments, distinct_keys);
-//	//printPeeledKeys<key_type>(key_assignments);
-//	std::cout << "Total distict keys: " << distinct_keys.size() << std::endl;
-//	net.setup(key_assignments);
-//	std::cout << "Finished setting up keys" << std::endl;
-//	
-//	std::cout << "Initial peeling: " << std::endl;
-//	net.peel_keys(init_peeled_keys);
-//	printPeeledKeys<key_type>(init_peeled_keys);
-//
-//
-//	while( !net.all_messages_received() ) {
-//		net.run_iter();
-//	}
-//
-//	std::vector<std::unordered_set<key_type>> peeled_keys(n_nodes);
-//	net.peel_keys(peeled_keys);
-//	printPeeledKeys<key_type>(peeled_keys);
-//	std::cout << "All messages transmitted in " << net.iter << " rounds" << std::endl;
-//	std::cout << "Percent of messages transmitted: " << percentSuccessfullyPeeled(peeled_keys, distinct_keys) << std::endl;
-//
-//}
 
 int main() {
-
-	testCompleteNetwork2<10>();
-	testCompleteNetwork2<20>();
-	testCompleteNetwork2<40>();
-	testCompleteNetwork2<80>();
-	testCompleteNetwork2<160>();
-	testCompleteNetwork2<320>();
-	testCompleteNetwork2<640>();
-	testCompleteNetwork2<1280>();
-	testCompleteNetwork2<2560>();
+	int num_trials = 10;
+	for(int i = 0; i < num_trials; ++i) {
+		testCompleteNetwork2<10>();
+		testCompleteNetwork2<20>();
+		testCompleteNetwork2<40>();
+		testCompleteNetwork2<80>();
+		testCompleteNetwork2<160>();
+		testCompleteNetwork2<320>();
+		testCompleteNetwork2<640>();
+		testCompleteNetwork2<1280>();
+		testCompleteNetwork2<2560>();
+	}
 	return 1;
 }

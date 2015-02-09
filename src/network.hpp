@@ -85,92 +85,78 @@ class iblt_node {
 	typedef iblt_node<n_nodes, key_type, hash_type> node_type; 
 	iblt_type* start_iblt; //IBLT containing all the keys that the node begins with
 	iblt_type* inter_iblt; //IBLT containing linear combo of keys received
-	SimpleField<PRIME> coeff_sum; //sum of coefficients of linear combo of keys
+	iblt_type* temp_iblt; //IBLT containing linear combo received during one round
+	SimpleField<PRIME> coeff_sum, temp_coeff_sum; //sum of coefficients of linear combo of keys
 	keyGenerator<key_type> kg;
  	int id; //unique identifier for node
-	bool has_message;
-	std::vector< node_type* > neighbors, prev_want_info, new_want_info; //nodes that have made pull requests
-	std::bitset<n_nodes> received_from; //for testing purposes, says whether have received message in some form (linear combo)	
-	
-	iblt_node( int num_buckets, int seed ) {
+	std::vector< node_type* > neighbors;
+	std::bitset<n_nodes> received_from, temp_received_from; //for testing purposes, says whether have received message in some form (linear combo)	
+	iblt_node( int num_buckets, int seed ): temp_iblt(NULL) {
 		id = seed;
 		kg.set_seed(id);
 		start_iblt = new iblt_type(num_buckets, num_hfs);
 		inter_iblt = new iblt_type(num_buckets, num_hfs);
+		temp_iblt  = new iblt_type(num_buckets, num_hfs);
 	}	
 	
 	~iblt_node() {
 		delete start_iblt;
 		delete inter_iblt;
 	}
-
+	int get_prime() {
+		return PRIME;
+	}
 	void setup(std::unordered_set<key_type>& messages) {
 		NET_DEBUG("Node " << id << " has " << messages.size() << " messages");
 		start_iblt->insert_keys(messages);
 		inter_iblt->insert_keys(messages);
 		coeff_sum.add(1);
-		has_message = (messages.size() > 0 );
 		received_from.set(id);
 		NET_DEBUG( id << " has received " << received_from.count() << " messages");
 	}
 	
-	void new_epoch() {
-		prev_want_info = new_want_info;
-		new_want_info.resize(0);
+	void end_epoch() {
+		inter_iblt->add(*temp_iblt);
+		coeff_sum.add(temp_coeff_sum); 	
+		delete temp_iblt;
+		temp_iblt = new iblt_type(start_iblt->num_buckets, start_iblt->num_hashfns);
+		temp_coeff_sum.set(0);
+		received_from |= temp_received_from;
+		temp_received_from.reset();
 	}
 	
 	bool all_messages_received() {
 		return received_from.all();
 	}
 
-	void push() {
+	void push_pull() {
 		int j = kg.generate_key() % neighbors.size();
 		send_message(*neighbors[j]);
-
+		receive_message(*neighbors[j]);	
 	}
 
-	void pull() {
-		int j = kg.generate_key() % neighbors.size();
-		send_pull_request(*neighbors[j]);
-	}
-
-	void push_pull() {
-		if( has_message ) {
-			size_t wanters = prev_want_info.size();
-			if( wanters > 0) { //if someone wants message, then give it to them
-				int j = kg.generate_key() % wanters;
-				send_message(*prev_want_info[j]);
-			} else {
-				push();
-			}
-		} else {
-			pull();
-		}
-	}
-
+	//TODO: Temp iblt before multiplying?
 	void send_message( iblt_node<n_nodes>& neighbor ) {	
 		int rand_mult = (kg.generate_key() % (PRIME - 1)) + 1;
-		inter_iblt->multiply(rand_mult);
-		coeff_sum.multiply(rand_mult);
+		iblt_type message= iblt_type(*inter_iblt);
+		SimpleField<PRIME> message_sum(coeff_sum); 
+		message.multiply(rand_mult);
+		message_sum.multiply(rand_mult);
 		NET_DEBUG( id << " pushing message to " << neighbor.id );
-		neighbor.receive_message(*this);
+		neighbor.receive_message(*this, message, message_sum);
+	}
+	
+	void receive_message( iblt_node<n_nodes>& neighbor, iblt_type& message, SimpleField<PRIME>& message_sum ) {
+		temp_iblt->add(message);
+		temp_coeff_sum.add(message_sum);
+		temp_received_from |= neighbor.received_from;
+		NET_DEBUG( id << " has received " << received_from.count() << " messages");
 	}
 	
 	void receive_message( iblt_node<n_nodes>& neighbor ) {
-		inter_iblt->add(*(neighbor.inter_iblt));
-		coeff_sum.add(neighbor.coeff_sum);
-		has_message = true;
-		received_from |= neighbor.received_from;
-		NET_DEBUG( id << " has received " << received_from.count() << " messages");
-	}
-
-	void send_pull_request( iblt_node<n_nodes>& neighbor ) {
-		NET_DEBUG( id << " sending pull request to " << neighbor.id );
-		neighbor.receive_pull_request(*this);
-	}
-
-	void receive_pull_request( iblt_node<n_nodes>& neighbor ) {
-		new_want_info.push_back( &neighbor );
+		temp_iblt->add(*(neighbor.inter_iblt));
+		temp_coeff_sum.add(neighbor.coeff_sum);
+		temp_received_from |= neighbor.received_from;
 	}
 
 	bool retrieve_messages(std::unordered_set<key_type>& messages) {
@@ -236,8 +222,8 @@ class GossipNetwork {
 	void run_iter() {
 		for(int i = 0; i < n_nodes; ++i) {
 			//push(i);
-			nodes[i]->new_epoch();
 			nodes[i]->push_pull();
+			nodes[i]->end_epoch();
 		}
 		++iter;
 	}
@@ -263,8 +249,6 @@ class GossipNetwork {
 		}
 		return success;
 	}
-
-	
 };
 #endif
 

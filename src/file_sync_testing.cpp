@@ -1,6 +1,6 @@
 #include "IBLT_helpers.hpp"
 #include "file_sync.hpp"
-#include "file_sync2.hpp"
+//#include "file_sync2.hpp"
 #include "file_sync.pb.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

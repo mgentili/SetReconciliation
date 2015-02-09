@@ -11,7 +11,13 @@ class SimpleField {
   public:
 	int64_t arg = 0;
 	SimpleField() {}
+	SimpleField(const SimpleField<N>& f) {
+		set(f.get_contents());
+	}
 
+	void set( int x ) {
+		arg = (x % N + N) % N;
+	}
     	void add( int x) {
         	arg = ((arg + x) % N + N) % N;
     	}   
