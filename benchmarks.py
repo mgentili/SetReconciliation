@@ -8,7 +8,7 @@ from itertools import groupby
 filenames = {
 			 'file_sync' : './bin/file_sync_testing',
 			 'dir_sync'   : './bin/dir_sync_testing',
-			 'gossip': './network_testing',
+			 'gossip': './bin/network_testing',
 			}
 tempdir = 'tmp/'
 plotdir = 'plot/'
@@ -201,16 +201,17 @@ def generateActualGraph( filename, start_block, end_block ):
 	print "{},{}".format(start_block,end_block),
 	print "{}".format(abs(content[0]['file2_size'] - content[0]['file1_size']))
 
-def generateNetworkGraph( filename ):
+def generateNetworkGraph( filename):
 	content = parseJson(filename)
 	caption = "multi-party IBLT"
+
 	x,y = grouping( content, lambda x: (int) (x['num_distinct_keys']), lambda x: sum(r["num_rounds"] for r in x)/len(x))
 	
 	info = { 'xlabel' : 'Number of parties', 'ylabel' : 'Number of rounds to completion',  
-		 'title' : "# Rounds for all parties to receive linear combo of all messages for p={}".format(filename), 'filename' : filename}
+		 'title' : "# Rounds for all parties to receive linear combo of all messages", 'filename' : filename}
 	generateGraph( info, [x], [y], [caption])
 
-def generateNetworkFailureGraph( filename ):
+def generateNetworkFailureGraph( filename, prime ):
 	content = parseJson(filename)
 	#print content[6]['nodes']
 	#fig = plt.figure()
@@ -218,12 +219,20 @@ def generateNetworkFailureGraph( filename ):
 	#plt.show()
 	#numpy.histogram(content[3]['nodes'])
 	threshold = 4
-	for c in content:
-		print "Parties: {}".format(c['num_distinct_keys']),
-		for i in xrange(threshold):
-			print "Num {}: {},".format(i, len(filter(lambda x: x == i, c['nodes']))),
-		print "Num >{}: {}".format(threshold, len(filter(lambda x: x >= threshold, c['nodes'])))
-		
+	content = filter( lambda x: x['prime'] == prime, content)
+	x, y = grouping( content, lambda x: (int) (x['num_distinct_keys']), lambda res: reduce( lambda x, y: x + y, [x["nodes"] for x in res] ))
+	#fig = plt.figure()
+	for i in zip(x,y):
+		print i[0], numpy.histogram(i[1], bins=[0,1,2,3,4])
+	
+	#print x
+	#print y	
+	#for c in content:
+	#	print "Parties: {}".format(c['num_distinct_keys']),
+	#	for i in xrange(threshold):
+	#		print "Num {}: {},".format(i, len(filter(lambda x: x == i, c['nodes']))),
+	#	print "Num >{}: {}".format(threshold, len(filter(lambda x: x >= threshold, c['nodes'])))
+	#	
 def main():
 	parser = argparse.ArgumentParser(description='Generate file sync data and make graphs')
 	parser.add_argument('-g', '--graphs', action='store_true', help='Whether to generate graphs')
@@ -240,6 +249,7 @@ def main():
 	parser.add_argument('--tag1', default='emacs-24.1')
 	parser.add_argument('--tag2', default='emacs-23.1')
 	parser.add_argument('--file')
+	parser.add_argument('--prime')
 	args = vars(parser.parse_args())
 	
 	if args['graphs']:
@@ -251,7 +261,8 @@ def main():
 			generateActualGraph(args['file'], int(args['block_start']), int(args['block_end']))
 		elif args['network']:
 			generateNetworkGraph(args['file'])
-			generateNetworkFailureGraph(args['file'])
+			if args['prime']:
+				generateNetworkFailureGraph(args['file'], int(args['prime']))
 	else:
 		if( args['rand']):
 			randData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['error_prob'])

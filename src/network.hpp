@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <deque>
 
 #include "IBLT_helpers.hpp"
 #include "basicField.hpp"
@@ -54,15 +55,45 @@ class random_network: public network_type {
 	};
 
 	void create_network(std::vector<std::vector<int> >& list) {
-		list.resize(n_nodes);
-		for(int i = 0; i < n_nodes; ++i ) {
-			for(int j = 0; j < i; ++j) {
-				if( dis(gen) < p ) {
-					list[i].push_back(j);
-					list[j].push_back(i);	
+		do {
+			list.clear();
+			list.resize(n_nodes);
+			for(int i = 0; i < n_nodes; ++i ) {
+				for(int j = 0; j < i; ++j) {
+					if( dis(gen) < p ) {
+						list[i].push_back(j);
+						list[j].push_back(i);	
+					}
 				}
 			}
-		}
+	
+		} while( !is_connected(list) );
+	}
+	
+	bool is_connected(std::vector<std::vector<int> >& list) {
+		std::deque<int> dq;
+		int n_nodes = list.size();
+		int num_traversed = 0;		
+		std::vector<bool> have_traversed(n_nodes);
+		dq.push_back( 0 );
+		while( !dq.empty() && (num_traversed < n_nodes) ) {
+			int curr_node = dq.front();
+			dq.pop_front();
+			if( !have_traversed[curr_node] ) {
+				++num_traversed;
+			}
+			have_traversed[curr_node] = true;
+			if( list[curr_node].size() == 0 ) {
+				return false;
+			}
+			for( auto it = list[curr_node].begin(); it != list[curr_node].end(); ++it) {
+				if( !have_traversed[*it] ) {
+					dq.push_back(*it);
+				}
+			}
+		} 
+		return (num_traversed == n_nodes);	
+		
 	}
 };
 
