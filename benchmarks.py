@@ -140,53 +140,78 @@ def generateGraph( info, xdata, ydata, labels):
 def getMinBlockBytes( xvals, yvals ):
 	return min( zip(xvals, yvals), key = lambda t: t[1] )
 
-def createXYVals( content ):
-	params = ['total_bytes_no_strata', 'total_bytes_with_strata', 'rsync_bytes', 'file2_size_compressed']
-	captions = ["IBLT (no strata)", "IBLT (with strata)", "rsync", "naive transfer (compressed)"]
+def createXYVals( content, start_block, end_block):
+	params = ['total_bytes_no_strata', 'total_bytes_with_strata', 'rsync_bytes']
+	captions = ["IBLT (no strata)", "IBLT (with strata)", "rsync"]
+	#params = ['total_bytes_no_strata', 'total_bytes_with_strata', 'rsync_bytes', 'file2_size_compressed']
+	#captions = ["IBLT (no strata)", "IBLT (with strata)", "rsync", "naive transfer (compressed)"]
+
 	xs = []
 	ys = []
 	mins = []
 	for p in params:
 		x,y = grouping( content, lambda x: (int) (x['block_size']), lambda x: sum(r[p] for r in x)/len(x))
+		x,y = zip(*filter( lambda x: x[0] >= start_block and x[0] <= end_block, zip(x,y)))
 		xs.append(x)
 		ys.append(y)
 		mins.append(getMinBlockBytes(x, y))
-
 	return xs, ys, mins, captions
 
-def generateRandGraph( filename ):
+def generateRandGraph( filename, start_block, end_block ):
 	content = parseJson(filename)
-	xs, ys, mins, captions = createXYVals( content )
+	xs, ys, mins, captions = createXYVals( content, start_block, end_block )
 	error_prob = content[0]['error_prob']
 	file_len = content[0]['file_length']
-	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Random Error Model with p(err) = {}, File Length = {}".format(error_prob, file_len) , 'filename' : filename}
+	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Random Error Model with p(err) = {}, File Length = {} bytes".format(error_prob, file_len) , 'filename' : filename}
 	generateGraph( info, xs, ys, captions)
+	print "{},".format(error_prob),
 	for i in zip(captions, mins):
-		print "{},{}".format(i[0], i[1])
+		print "{},{},".format(i[1][0], i[1][1]),
+	print "{},".format(content[0]['file2_size_compressed']),
+	print "{},{}".format(start_block,end_block)
 
-def generateBlockGraph( filename ):
+def generateBlockGraph( filename, start_block, end_block ):
 	content = parseJson(filename)
-	xs, ys, mins, captions = createXYVals( content )
+	xs, ys, mins, captions = createXYVals( content, start_block, end_block )
 	num_blocks = content[0]['num_block_changes']
 	file_len = content[0]['file_length']
-	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Block Error Model with {} blocks changed, File Length = {}".format(num_blocks, file_len) , 'filename' : filename}
+	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Block Error Model with {} blocks changed, File Length = {} bytes".format(num_blocks, file_len) , 'filename' : filename}
 	generateGraph( info, xs, ys, captions)
+	print "{},".format(num_blocks),
 	for i in zip(captions, mins):
-		print "{},{}".format(i[0], i[1])
+		print "{},{},".format(i[1][0], i[1][1]),
+	print "{},".format(content[0]['file2_size_compressed']),
+	print "{},{}".format(start_block,end_block)
 
-def generateActualGraph( filename ):
+def generateActualGraph( filename, start_block, end_block ):
 	content = parseJson(filename)
 	tags = filename.split("_")
 	project = tags[-4]
 	tag1 = tags[-3]
 	tag2 = tags[-2]
-	xs, ys, mins, captions = createXYVals( content )
+	xs, ys, mins, captions = createXYVals( content, start_block, end_block )
 	info = { 'xlabel' : 'block size(bytes)', 'ylabel' : 'bytes transferred', 'title' : "Transferring {} data from tag {} to tag {}".format(project, tag1, tag2) , 'filename' : filename}
 	generateGraph( info, xs, ys, captions)
+	
+	print "{},".format(filename),
 	for i in zip(captions, mins):
-		print "{},{}".format(i[0], i[1])
+		print "{},{},".format(i[1][0], i[1][1]),
+	print "{},".format(content[0]['file2_size_compressed']),
+	print "{},{}".format(start_block,end_block),
+	print "{}".format(abs(content[0]['file2_size'] - content[0]['file1_size']))
 
+def generateNetworkGraph( filename ):
+	content = parseJson(filename)
+	caption = "multi-party IBLT"
+	x,y = grouping( content, lambda x: (int) (x['num_distinct_keys']), lambda x: sum(r["num_rounds"] for r in x)/len(x))
+	
+	info = { 'xlabel' : 'Number of parties', 'ylabel' : 'Number of rounds to completion',  
+		 'title' : "Number of rounds for all parties to receive a linear combination of all messages for p={}".format(filename), 'filename' : filename}
+	generateGraph( info, xs, ys, caption)
 
+def generateNetworkFailureGraph( filename ):
+	content = parseJson(filename)
+		
 def main():
 	parser = argparse.ArgumentParser(description='Generate file sync data and make graphs')
 	parser.add_argument('-g', '--graphs', action='store_true', help='Whether to generate graphs')
@@ -207,11 +232,11 @@ def main():
 	
 	if args['graphs']:
 		if args['rand']:
-			generateRandGraph(args['file'])
+			generateRandGraph(args['file'], int(args['block_start']), int(args['block_end']))
 		elif args['block']:
-			generateBlockGraph(args['file'])
+			generateBlockGraph(args['file'], int(args['block_start']), int(args['block_end']))
 		elif args['actual']:
-			generateActualGraph(args['file'])
+			generateActualGraph(args['file'], int(args['block_start']), int(args['block_end']))
 	else:
 		if( args['rand']):
 			randData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['error_prob'])
