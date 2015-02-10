@@ -2,6 +2,14 @@
 #include "IBLT_helpers.hpp"
 #include <iostream>
 #include "json/json.h"
+//#define PRIME 17
+//#define PRIME 101
+//#define PRIME 251
+//#define PRIME 65027
+#define SMALL_PRIME 14653
+//#define PRIME 39373
+//#define PRIME 104729
+#define BIG_PRIME 860117
 
 Json::Value info;
 Json::StyledWriter writer;
@@ -22,7 +30,6 @@ double percentSuccessfullyPeeled(std::vector<std::unordered_set<key_type>>& peel
 	int denom = distinct_keys.size() * peeled_keys.size();
 	int numer = 0;
 	int failed_parties = 0;
-	int failed_keys = 0;
 	for(auto it = peeled_keys.begin(); it != peeled_keys.end(); ++it) {
 		int curr_count = 0;
 		for(auto it2 = (*it).begin(); it2 != (*it).end(); ++it2) {
@@ -37,7 +44,7 @@ double percentSuccessfullyPeeled(std::vector<std::unordered_set<key_type>>& peel
 	info["failed_keys"] = num_failed_keys;
 	info["num_failed_parties"] = num_failed_parties;
 	info["pct_transmitted"] = pct_transmitted;
-
+	info["num_failed_keys"] = num_failed_keys;
 	return( numer/denom );
 }
 
@@ -51,11 +58,11 @@ void processPeeledKeys(std::vector<std::unordered_set<key_type> >& peeled_keys, 
 
 	info["nodes"] = failed_array;
 }
-template <int n_nodes>
+template <int n_nodes, int prime>
 void testCompleteNetwork2() {
 	typedef uint64_t key_type;
 	typedef uint64_t hash_type;
-	typedef GossipNetwork<n_nodes, random_network, key_type, hash_type> net_type;
+	typedef GossipNetwork<n_nodes, prime, random_network, key_type, hash_type> net_type;
 	net_type net(2*n_nodes);
 	keyHandler<key_type> kh;
 
@@ -94,15 +101,25 @@ void testCompleteNetwork2() {
 int main() {
 	int num_trials = 10;
 	for(int i = 0; i < num_trials; ++i) {
-		testCompleteNetwork2<10>();
-		testCompleteNetwork2<20>();
-		testCompleteNetwork2<40>();
-		testCompleteNetwork2<80>();
-		testCompleteNetwork2<160>();
-		testCompleteNetwork2<320>();
-		testCompleteNetwork2<640>();
-		testCompleteNetwork2<1280>();
-		testCompleteNetwork2<2560>();
+		testCompleteNetwork2<10, BIG_PRIME>();
+		testCompleteNetwork2<20, BIG_PRIME>();
+		testCompleteNetwork2<40, BIG_PRIME>();
+		testCompleteNetwork2<80, BIG_PRIME>();
+		testCompleteNetwork2<160, BIG_PRIME>();
+		testCompleteNetwork2<320, BIG_PRIME>();
+		testCompleteNetwork2<640, BIG_PRIME>();
+		testCompleteNetwork2<1280, BIG_PRIME>();
+	}
+
+	for(int i = 0; i < num_trials; ++i) {
+		testCompleteNetwork2<10, SMALL_PRIME>();
+		testCompleteNetwork2<20, SMALL_PRIME>();
+		testCompleteNetwork2<40, SMALL_PRIME>();
+		testCompleteNetwork2<80, SMALL_PRIME>();
+		testCompleteNetwork2<160, SMALL_PRIME>();
+		testCompleteNetwork2<320, SMALL_PRIME>();
+		testCompleteNetwork2<640, SMALL_PRIME>();
+		testCompleteNetwork2<1280, SMALL_PRIME>();
 	}
 	return 1;
 }

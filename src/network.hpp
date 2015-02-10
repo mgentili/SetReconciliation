@@ -8,14 +8,6 @@
 #include "basicField.hpp"
 #include "multiIBLT.hpp"
 
-//#define PRIME 17
-//#define PRIME 101
-//#define PRIME 251
-//#define PRIME 65027
-//#define PRIME 14653
-//#define PRIME 39373
-//#define PRIME 104729
-#define PRIME 860117
 #define NETWORK_DEBUG 0
 #if NETWORK_DEBUG
 #  define NET_DEBUG(x)  do { std::cerr << x << std::endl; } while(0)
@@ -74,24 +66,24 @@ class random_network: public network_type {
 	}
 };
 
-template <int n_nodes, typename key_type = uint64_t, typename hash_type = uint64_t>
+template <int n_nodes, int prime, typename key_type = uint32_t, typename hash_type = uint32_t>
 class iblt_node {
     public:
 	const int num_hfs = 4;
 	static const int key_bits = 8*sizeof(key_type);
 	
-	typedef multiIBLT_bucket<PRIME, key_type, key_bits, hash_type> bucket_type;
+	typedef multiIBLT_bucket<prime, key_type, key_bits, hash_type> bucket_type;
 	typedef multiIBLT<n_nodes, key_type, key_bits, hash_type, bucket_type> iblt_type; 
-	typedef iblt_node<n_nodes, key_type, hash_type> node_type; 
+	typedef iblt_node<n_nodes, prime, key_type, hash_type> node_type; 
 	iblt_type* start_iblt; //IBLT containing all the keys that the node begins with
 	iblt_type* inter_iblt; //IBLT containing linear combo of keys received
 	iblt_type* temp_iblt; //IBLT containing linear combo received during one round
-	SimpleField<PRIME> coeff_sum, temp_coeff_sum; //sum of coefficients of linear combo of keys
+	SimpleField<prime> coeff_sum, temp_coeff_sum; //sum of coefficients of linear combo of keys
 	keyGenerator<key_type> kg;
  	int id; //unique identifier for node
 	std::vector< node_type* > neighbors;
 	std::bitset<n_nodes> received_from, temp_received_from; //for testing purposes, says whether have received message in some form (linear combo)	
-	iblt_node( int num_buckets, int seed ): temp_iblt(NULL) {
+	iblt_node( int num_buckets, int seed ) {
 		id = seed;
 		kg.set_seed(id);
 		start_iblt = new iblt_type(num_buckets, num_hfs);
@@ -102,9 +94,10 @@ class iblt_node {
 	~iblt_node() {
 		delete start_iblt;
 		delete inter_iblt;
+		delete temp_iblt;
 	}
 	int get_prime() {
-		return PRIME;
+		return prime;
 	}
 	void setup(std::unordered_set<key_type>& messages) {
 		NET_DEBUG("Node " << id << " has " << messages.size() << " messages");
@@ -136,24 +129,24 @@ class iblt_node {
 	}
 
 	//TODO: Temp iblt before multiplying?
-	void send_message( iblt_node<n_nodes>& neighbor ) {	
-		int rand_mult = (kg.generate_key() % (PRIME - 1)) + 1;
+	void send_message( node_type& neighbor ) {	
+		int rand_mult = (kg.generate_key() % (prime - 1)) + 1;
 		iblt_type message= iblt_type(*inter_iblt);
-		SimpleField<PRIME> message_sum(coeff_sum); 
+		SimpleField<prime> message_sum(coeff_sum); 
 		message.multiply(rand_mult);
 		message_sum.multiply(rand_mult);
 		NET_DEBUG( id << " pushing message to " << neighbor.id );
 		neighbor.receive_message(*this, message, message_sum);
 	}
 	
-	void receive_message( iblt_node<n_nodes>& neighbor, iblt_type& message, SimpleField<PRIME>& message_sum ) {
+	void receive_message( node_type& neighbor, iblt_type& message, SimpleField<prime>& message_sum ) {
 		temp_iblt->add(message);
 		temp_coeff_sum.add(message_sum);
 		temp_received_from |= neighbor.received_from;
 		NET_DEBUG( id << " has received " << received_from.count() << " messages");
 	}
 	
-	void receive_message( iblt_node<n_nodes>& neighbor ) {
+	void receive_message( node_type& neighbor ) {
 		temp_iblt->add(*(neighbor.inter_iblt));
 		temp_coeff_sum.add(neighbor.coeff_sum);
 		temp_received_from |= neighbor.received_from;
@@ -162,7 +155,7 @@ class iblt_node {
 	bool retrieve_messages(std::unordered_set<key_type>& messages) {
 		iblt_type inter_iblt_tmp = iblt_type(*inter_iblt);
 		iblt_type start_iblt_tmp = iblt_type(*start_iblt);
-		int mult_factor = PRIME - coeff_sum.arg;
+		int mult_factor = prime - coeff_sum.arg;
 		start_iblt_tmp.multiply( mult_factor );
 		inter_iblt_tmp.add(start_iblt_tmp);
 		bool res = inter_iblt_tmp.peel(messages);
@@ -175,10 +168,11 @@ class iblt_node {
 };
 
 template <int n_nodes, 
+	  int prime,
 	  class graph_type = complete_network, 
-	  typename key_type = uint64_t, 
-	  typename hash_type = uint64_t, 
-	  class node_type = iblt_node<n_nodes, key_type, hash_type> > 
+	  typename key_type = uint32_t, 
+	  typename hash_type = uint32_t, 
+	  class node_type = iblt_node<n_nodes, prime, key_type, hash_type> > 
 class GossipNetwork {
     public:
 	std::vector<std::vector<int>> adjacencies;

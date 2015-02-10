@@ -3,6 +3,7 @@ import subprocess
 import time
 import json
 import matplotlib.pyplot as plt
+import numpy
 from itertools import groupby
 filenames = {
 			 'file_sync' : './bin/file_sync_testing',
@@ -206,11 +207,22 @@ def generateNetworkGraph( filename ):
 	x,y = grouping( content, lambda x: (int) (x['num_distinct_keys']), lambda x: sum(r["num_rounds"] for r in x)/len(x))
 	
 	info = { 'xlabel' : 'Number of parties', 'ylabel' : 'Number of rounds to completion',  
-		 'title' : "Number of rounds for all parties to receive a linear combination of all messages for p={}".format(filename), 'filename' : filename}
-	generateGraph( info, xs, ys, caption)
+		 'title' : "# Rounds for all parties to receive linear combo of all messages for p={}".format(filename), 'filename' : filename}
+	generateGraph( info, [x], [y], [caption])
 
 def generateNetworkFailureGraph( filename ):
 	content = parseJson(filename)
+	#print content[6]['nodes']
+	#fig = plt.figure()
+	#plt.hist(content[6]['nodes'])
+	#plt.show()
+	#numpy.histogram(content[3]['nodes'])
+	threshold = 4
+	for c in content:
+		print "Parties: {}".format(c['num_distinct_keys']),
+		for i in xrange(threshold):
+			print "Num {}: {},".format(i, len(filter(lambda x: x == i, c['nodes']))),
+		print "Num >{}: {}".format(threshold, len(filter(lambda x: x >= threshold, c['nodes'])))
 		
 def main():
 	parser = argparse.ArgumentParser(description='Generate file sync data and make graphs')
@@ -237,6 +249,9 @@ def main():
 			generateBlockGraph(args['file'], int(args['block_start']), int(args['block_end']))
 		elif args['actual']:
 			generateActualGraph(args['file'], int(args['block_start']), int(args['block_end']))
+		elif args['network']:
+			generateNetworkGraph(args['file'])
+			generateNetworkFailureGraph(args['file'])
 	else:
 		if( args['rand']):
 			randData = generateRandData(args['file_len'], args['block_start'], args['block_end'], args['error_prob'])
