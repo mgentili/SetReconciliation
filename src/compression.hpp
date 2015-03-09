@@ -1,11 +1,10 @@
 #ifndef _COMPRESSION
 #define _COMPRESSION
 
-#include <stdexcept>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
-
+#include <stdexcept>
 
 /** Compress a STL string using zlib with given compression level and return
   * the binary data. */

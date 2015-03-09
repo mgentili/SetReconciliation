@@ -1,12 +1,14 @@
-#include "IBLT_helpers.hpp"
 #include "file_sync.hpp"
-//#include "file_sync2.hpp"
 #include "file_sync.pb.h"
+
+#include <stdio.h>
+#include <unistd.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
+#include "IBLT_helpers.hpp"
 #include "json/json.h"
-#include <unistd.h>
-#include <stdio.h>
 
 namespace po = boost::program_options;
 Json::Value info;
@@ -22,11 +24,9 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	fsync_type file_sync_A(file1, avg_block_size), file_sync_B(file2, avg_block_size);
 	std::string strata_encoding = file_sync_A.send_strata_encoding();
 	int diff_est = file_sync_B.receive_strata_encoding(strata_encoding);
-	//std::cout << "Difference estimate is " << diff_est << std::endl;
 	std::string iblt_encoding = file_sync_A.send_IBLT_encoding(diff_est);
 	std::string rd2_encoding = file_sync_B.receive_IBLT_encoding(iblt_encoding);
 	file_sync_A.receive_rd2_encoding(rd2_encoding);
-	//file_sync_B.my_rd2.print_size_info();
 	
 	int total_bytes_no_strata = iblt_encoding.size() + rd2_encoding.size();
 	int total_bytes = total_bytes_no_strata + strata_encoding.size();
@@ -43,10 +43,6 @@ void testFullProtocol(std::string& file1, std::string& file2, int avg_block_size
 	std::string file1_compressed = compress_string(file1_string);
 	std::string file2_compressed = compress_string(file2_string);
 	
-	//std::vector<uint32_t> encoding = file_sync_B.my_rd2.existing_chunk_encoding;
-	//std::string stringified_encoding((char*) encoding.data(), encoding.size());
-	//std::cout << "Existing chunk encoding size" << encoding.size() << std::endl;
-	//std::cout << "Existing chunk encoding compressed" << compress_string(stringified_encoding).size() << std::endl;	
 	Json::Value block_size(avg_block_size);
 	Json::Value diff(diff_est), tot_no_strata(total_bytes_no_strata), tot_with_strata(total_bytes);
 	Json::Value f1_sz(file1_size), f2_sz(file2_size);
@@ -69,7 +65,10 @@ void testRsync(std::string& file1, std::string& file2, int block_size) {
 	char block_sz[15] = {0}, rsync_bytes[15] = {0};
 	sprintf( block_sz, "%d", block_size );
 	if( pid == 0 ) {
-		char* argv[] = { const_cast<char*>("./parseRsync.sh"), block_sz, const_cast<char*>(file2.c_str()), NULL };
+		char* argv[] = { const_cast<char*>("./parseRsync.sh"), 
+                         block_sz, 
+                         const_cast<char*>(file2.c_str()), 
+                         NULL };
 		dup2(pipe_fd[1], STDOUT_FILENO); 
 		close(pipe_fd[1]); close(pipe_fd[0]);
 		execvp(argv[0], argv);

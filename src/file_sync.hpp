@@ -1,18 +1,19 @@
 #ifndef _FILE_SYNC
 #define _FILE_SYNC
 
-#include <map>
 #include <assert.h>
 #include <zlib.h>
+
+#include <map>
 #include <cmath>
 
 #include "basicIBLT.hpp"
-#include "multiIBLT.hpp"
+#include "compression.hpp"
+#include "file_sync.pb.h"
 #include "fingerprinting.hpp"
 #include "IBLT_helpers.hpp"
-#include "file_sync.pb.h"
+#include "multiIBLT.hpp"
 #include "StrataEstimator.hpp"
-#include "compression.hpp"
 
 #define FILE_SYNC_DEBUG 0
 #if FILE_SYNC_DEBUG
@@ -41,18 +42,25 @@ class FileSynchronizer {
   	Round1Info my_rd1;
   	Round2Info my_rd2;
   	std::unordered_set<hash_type> my_distinct_keys, cp_distinct_keys, shared_keys;
-        OverlapInfo oi; //only for the shared hashes
-       	std::string file;
+    OverlapInfo oi; //only for the shared hashes
+   	std::string file;
 	size_t avg_block_size; 
 
-  	FileSynchronizer(const std::string& filename): file(filename)  {
-		avg_block_size = get_block_size( get_file_size(file() ) );
-		process_file(file);
+  	FileSynchronizer(const std::string& filename): FileSynchronizer(filename, get_block_size(get_file_size(file))) 
+    {
+                                                   //file(filename)  {
+	//	avg_block_size = get_block_size( get_file_size(file() ) );
+	//	process_file(file);
   	};
 
 	FileSynchronizer(const std::string& filename, size_t avg_block_size): file(filename), avg_block_size(avg_block_size) {
 		process_file(file);
 	} 
+
+	static size_t get_block_size(size_t file_size) {
+		size_t new_block_size = (size_t) sqrt( file_size );
+		return (new_block_size > DEFAULT_BLOCK_SIZE) ? new_block_size : DEFAULT_BLOCK_SIZE;
+	}
 
 //ENCODING STUFF:
   	std::string send_strata_encoding() {
@@ -60,7 +68,8 @@ class FileSynchronizer {
   		my_rd1.estimator.serialize(estimator);
   		std::string estimator_encoding;
   		estimator.SerializeToString(&estimator_encoding);
-		ENCODING_DEBUG("Serialized estimator structure: " << estimator_encoding.size()*8 << " bits vs actual " << my_rd1.estimator.size_in_bits());
+		ENCODING_DEBUG("Serialized estimator structure: " << estimator_encoding.size()*8 
+                       << " bits vs actual " << my_rd1.estimator.size_in_bits());
 		estimator_encoding = compress_string(estimator_encoding);
 		ENCODING_DEBUG("Compressed estimator structure: " << estimator_encoding.size()*8 << " bits");
   		return estimator_encoding;
@@ -84,7 +93,8 @@ class FileSynchronizer {
 		my_rd1.iblt->serialize(iblt_protobuf);
 		std::string iblt_encoding;
 		iblt_protobuf.SerializeToString(&iblt_encoding);
-		ENCODING_DEBUG("Serialized iblt structure: " << iblt_encoding.size()*8 << " bits vs actual " << (my_rd1.iblt)->size_in_bits());
+		ENCODING_DEBUG("Serialized iblt structure: " << iblt_encoding.size()*8 
+                       << " bits vs actual " << (my_rd1.iblt)->size_in_bits());
 		iblt_encoding = compress_string(iblt_encoding);
 		ENCODING_DEBUG("Compressed iblt structure: " << iblt_encoding.size()*8 << " bits");
 		return iblt_encoding;
@@ -105,7 +115,8 @@ class FileSynchronizer {
 		my_rd2.serialize(rd2_protobuf);
 		std::string rd2_encoding;
 		rd2_protobuf.SerializeToString(&rd2_encoding);
-		ENCODING_DEBUG("Serialized rd2 structure: " << rd2_encoding.size()*8 << " bits vs actual " << my_rd2.size_in_bits());
+		ENCODING_DEBUG("Serialized rd2 structure: " << rd2_encoding.size()*8 
+                       << " bits vs actual " << my_rd2.size_in_bits());
 		rd2_encoding = compress_string(rd2_encoding);
 		ENCODING_DEBUG("Compressed rd2 structure: " << rd2_encoding.size()*8 << " bits");
 		return rd2_encoding;
@@ -122,10 +133,6 @@ class FileSynchronizer {
 
 //PROTOCOL STUFF
 
-	size_t get_block_size(size_t file_size) {
-		size_t new_block_size = (size_t) sqrt( file_size );
-		return (new_block_size > DEFAULT_BLOCK_SIZE) ? new_block_size : DEFAULT_BLOCK_SIZE;
-	}
   	//Party A fills his structure with info to estimate set difference
   	//and fills the rest of the hash structure while he's at it
   	void process_file(const std::string& filename) {
@@ -140,12 +147,13 @@ class FileSynchronizer {
   			if( my_rd1.hashes_to_poslen.find(it->first) != my_rd1.hashes_to_poslen.end() ) {
   				SYNC_DEBUG("Already have hash " << it->first << " pos " << curr_pos << " len" << it->second);
   			} else {
-  				my_rd1.hashes_to_poslen[it->first] = make_pair(curr_pos, it->second);
+  				my_rd1.hashes_to_poslen[it->first] = std::make_pair(curr_pos, it->second);
   			}
   			SYNC_DEBUG("File" << filename << " Hash " << it->first << " pos " << curr_pos << " len" << it->second);
 			curr_pos += it->second;
   		}
-  		SYNC_DEBUG("File " << filename << " has " << my_rd1.hashes.size() << "hashes" << ". hashes_to_pos_len has size" << my_rd1.hashes_to_poslen.size());
+  		SYNC_DEBUG("File " << filename << " has " << my_rd1.hashes.size() 
+                   << "hashes" << ". hashes_to_pos_len has size" << my_rd1.hashes_to_poslen.size());
   	 	for(auto it = my_rd1.hashes_to_poslen.begin(); it != my_rd1.hashes_to_poslen.end(); ++it) {
   	 		my_rd1.estimator.insert_key(it->first);
   	 	}
@@ -157,7 +165,6 @@ class FileSynchronizer {
 
   	void create_IBLT(size_t bucket_estimate) {
   		size_t num_buckets = bucket_estimate * 2;
-  		// size_t num_hashfns = ( bucket_estimate < 200 ) ? 3 : 4;
   		size_t num_hashfns = 4;
   		
   		my_rd1.iblt = new iblt_type(num_buckets, num_hashfns);
@@ -226,7 +233,6 @@ class FileSynchronizer {
   			bool chunk_exists = (my_distinct_keys.find(my_rd1.hashes[i].first) == my_distinct_keys.end());
   			my_rd2.chunk_exists.push_back( chunk_exists );
   			hash_type hash_val = my_rd1.hashes[i].first;
-  			// std::cout << "Current chunk hashval is " << hash_val;
   			if(chunk_exists) { 
 				size_t cp_chunk_index;
 				if( last_chunk_existed ) {
@@ -253,8 +259,6 @@ class FileSynchronizer {
   	}
 
   	bool receive_IBLT(iblt_type& cp_IBLT) {
-  	// void receive_IBLT(const char* filename, iblt_type& cp_IBLT, Round1Info& cp_rd1) {
-		
 		if( !get_distinct_keys(cp_IBLT) ) {
 			return false;
 		};
@@ -311,7 +315,8 @@ class FileSynchronizer {
 	}
 
 	template <typename first_type, typename second_type>
-	void insert_to_map(first_type& chars, second_type val, std::unordered_map<first_type, std::vector<second_type> >& mapping) {
+	void insert_to_map(first_type& chars, second_type val, 
+                       std::unordered_map<first_type, std::vector<second_type> >& mapping) {
 		if( mapping.find(chars) == mapping.end() ) {
 			mapping[chars];
 		}
@@ -322,7 +327,7 @@ class FileSynchronizer {
 		std::string tempfile("tmp/temp.txt");
   		FILE* fp = fopen(tempfile.c_str(), "w");
 		if( !fp ) {
-			cout << "Unable to open file" << endl;
+            std::cout << "Unable to open file" << std::endl;
 			exit(1);
 		}
 
@@ -364,11 +369,14 @@ class FileSynchronizer {
 				last_hash = relevant_hash;
 				std::pair<size_t, size_t> chunk_info = my_rd1.hashes_to_poslen[relevant_hash];
 				fwrite(&(buf.data()[chunk_info.first]), 1, chunk_info.second, fp);
-				SYNC_DEBUG("I already have chunk starting at pos " << chunk_info.first << " with len " << chunk_info.second);
+				SYNC_DEBUG("I already have chunk starting at pos " << chunk_info.first 
+                           << " with len " << chunk_info.second);
 				++existing_chunk;
 			} else { // otherwise I need to read it from the passed in structure
-				fwrite(cp_rd2.new_chunk_info[new_chunk].c_str(), 1, cp_rd2.new_chunk_info[new_chunk].size(), fp);
-				SYNC_DEBUG("I need new chunk with contents" << cp_rd2.new_chunk_info[new_chunk] << " with len " << cp_rd2.new_chunk_info[new_chunk].size());
+				fwrite(cp_rd2.new_chunk_info[new_chunk].c_str(), 1, 
+                       cp_rd2.new_chunk_info[new_chunk].size(), fp);
+				SYNC_DEBUG("I need new chunk with contents" << cp_rd2.new_chunk_info[new_chunk] 
+                           << " with len " << cp_rd2.new_chunk_info[new_chunk].size());
 				++new_chunk;
 				last_chunk_exists = false;
 			}
@@ -395,17 +403,20 @@ template <typename hash_type, typename iblt_type>
 class FileSynchronizer<hash_type, iblt_type>::Round1Info {
   public:
 	StrataEstimator<hash_type> estimator;
-  	std::vector<pair<hash_type, size_t> > hashes; //hash and length
-  	std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen; //mapping from hash to position in file and length
-  	iblt_type* iblt;
+    //hash and length
+    std::vector<std::pair<hash_type, size_t> > hashes; //hash and length
+  	//mapping from hash to position in file and length
+    std::map<hash_type, std::pair<size_t, size_t> > hashes_to_poslen;
+    iblt_type* iblt;
 
   	~Round1Info() {
   		delete iblt;
   	}
 };
 
+//info to update A to have the same file as B
 template <typename hash_type, typename iblt_type>
-class FileSynchronizer<hash_type, iblt_type>::Round2Info { //info to update A to have the same file as B
+class FileSynchronizer<hash_type, iblt_type>::Round2Info { 
   public:
 	std::vector<bool> chunk_exists;  //for each chunk B has, whether A has
 	std::vector<bool> hash_exists; //for each hash A has, whether B has (this is in sorted order)

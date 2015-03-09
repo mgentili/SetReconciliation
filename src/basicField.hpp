@@ -1,6 +1,8 @@
 #ifndef _BASIC_FIELD
 #define _BASIC_FIELD
 
+#include <assert.h>
+
 #include <cstring>
 #include <iostream>
 
@@ -37,7 +39,9 @@ class SimpleField {
     	void multiply(int64_t i) {
 		if( i > 0 ) {
 			if( arg*i < arg ) {
-				std::cout << "In smple field: " << arg << " * " << i << " = " << arg*i << std::endl;
+				std::cout << "In smple field: " << arg 
+                          << " * " << i 
+                          << " = " << arg*i << std::endl;
 			}
 		}
 		arg = ((arg*i) % N + N) % N;
@@ -56,8 +60,6 @@ class SimpleField {
     	}
 };
 
-//template<int N, int key_bits, typename chunk_type = uint8_t>
-//template<int N, int key_bits, typename chunk_type = uint16_t>
 template<int N, int key_bits, typename chunk_type = uint32_t>
 class BaseField {
   public:
@@ -75,7 +77,7 @@ class BaseField {
         }
         return true;
     }
-    //TODO: Handle for 2-party case?
+    
     void multiply(int k) {
 	for(int i = 0; i < key_bits; ++i) {
 	    arg[i] = field_multiply(arg[i], k);
@@ -93,17 +95,11 @@ class BaseField {
     }
 
     inline chunk_type field_add(int x, int y) {
-
-	return ((x + y) % N + N) % N;
+        return ((x + y) % N + N) % N;
     }
 
     inline chunk_type field_multiply(int64_t x, int64_t y) {
-        //printf("x: %d, y: %d, x*y: %d\n", x, y, ((x*y) % N + N ) % N);
-	if( x*y < x ) {
-		std::cout << "In field multiply: " <<  x << " * " << y << " = " << x*y << std::endl;
-		exit(1);
-	} 
-	return ((x*y) % N + N) % N;
+	    return ((x*y) % N + N) % N;
     }
 
 
@@ -111,7 +107,7 @@ class BaseField {
         for(int i = 0; i < key_bits; ++i) {
             std::cout << arg[i];
         }
-	std::cout << std::endl;
+	    std::cout << std::endl;
     }
 
     bool operator==( const BaseField<N, key_bits>& other ) const {
@@ -132,7 +128,6 @@ class BaseField {
         return false;
     }
 
-    //TODO: not exactly the right definition
     inline bool can_field_divide(int x, int y) {
         if( x == 0)
             return true;
@@ -201,6 +196,7 @@ class Field<N, std::string, key_bits> : public BaseField<N, key_bits> {
   public:
     using BaseField<N, key_bits>::arg;
     using BaseField<N, key_bits>::field_add;
+    
     void add( const std::string& key) {
         add_n_times(key.c_str(), 1);
     }
@@ -324,10 +320,6 @@ class Field<2, std::string, key_bits> {
     }
 
     void extract_key( std::string& key) {
-        // char buf[key_bits/8] = {};
-        // for(int i = 0; i < key_bits/8; ++i) {
-        //     copy_char(buf, i);
-        // }
         key.assign(arg, key_bits/8);
     }
 

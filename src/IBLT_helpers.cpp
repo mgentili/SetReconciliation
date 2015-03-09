@@ -1,6 +1,5 @@
 #include "IBLT_helpers.hpp"
 
-
 size_t load_buffer_with_file(const std::string& filename, std::vector<char>& buffer) {
 	size_t size = get_file_size(filename);
 
@@ -28,6 +27,7 @@ std::string get_SHAHash(const std::string& filename) {
 	load_buffer_with_file(filename, buf);
 	return HashUtil::SHA1Hash( buf.data(), buf.size());
 }
+
 // generate_random_file creates a file with len alphanumeric characters
 void generate_random_file(const std::string& filename, size_t len) {
 	FILE* fp = fopen(filename.c_str(), "w");
@@ -44,7 +44,9 @@ void generate_random_file(const std::string& filename, size_t len) {
 
 // generate_similar_file creates a file that has on average pct_similarity characters the same 
 // and in the same order as the old_file
-void generate_similar_file(const std::string& old_file, const std::string& new_file, double pct_similarity) {
+void generate_similar_file(const std::string& old_file, 
+                           const std::string& new_file, 
+                           double pct_similarity) {
 	FILE* fp1 = fopen(old_file.c_str(), "r");
 	FILE* fp2 = fopen(new_file.c_str(), "w");
 	size_t sim = (size_t) (pct_similarity * 100000);
@@ -65,7 +67,10 @@ void generate_similar_file(const std::string& old_file, const std::string& new_f
 	fclose(fp2);
 }
 
-void generate_block_changed_file(const std::string& old_file, const std::string& new_file, size_t num_new_blocks, size_t block_size) {
+void generate_block_changed_file(const std::string& old_file, 
+                                 const std::string& new_file, 
+                                 size_t num_new_blocks, 
+                                 size_t block_size) {
 	keyGenerator<uint64_t> kg;
 	std::unordered_set<size_t> start_changes;
 		
@@ -75,8 +80,6 @@ void generate_block_changed_file(const std::string& old_file, const std::string&
 	while( start_changes.size() != num_new_blocks ) {
 		start_changes.insert( kg.generate_key() % (file_size - block_size ) );
 	}
-
-			
 
 	FILE* fp2 = fopen(new_file.c_str(), "w");
 

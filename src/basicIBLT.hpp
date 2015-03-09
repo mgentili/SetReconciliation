@@ -1,14 +1,16 @@
 #ifndef _BASIC_IBLT
 #define _BASIC_IBLT
 
-#include <vector>
-#include <stdint.h>
 #include <assert.h>
-#include <functional>
+#include <stdint.h>
+
+#include <algorithm>
 #include <cstdlib>
 #include <deque>
-#include <algorithm>
+#include <functional>
 #include <unordered_set>
+#include <vector>
+
 #include "hash_util.hpp"
 #include "file_sync.pb.h"
 
@@ -214,7 +216,8 @@ class basicIBLT {
 		}
 	}	
 
-	bool peel(std::unordered_set<key_type>& my_peeled_keys, std::unordered_set<key_type>& cp_peeled_keys ) {
+	bool peel(std::unordered_set<key_type>& my_peeled_keys, 
+              std::unordered_set<key_type>& cp_peeled_keys ) {
 		std::deque<bucket_type> peelable_keys;
 		bucket_type curr_bucket;
 
@@ -254,7 +257,6 @@ class basicIBLT {
 	}
 
 	//peels the keys from an IBLT, returning true upon success, false upon failure
-	//TODO: efficient way to do peeling?
 	bool peel(std::unordered_set<key_type>& peeled_keys ) {
 		std::unordered_set<key_type> my_peeled_keys, cp_peeled_keys;
 		bool res = peel(my_peeled_keys, cp_peeled_keys);
@@ -294,7 +296,8 @@ class basicIBLT {
 	}
 	
 	bool can_peel(bucket_type& curr_bucket) {
-		return abs(curr_bucket.count) == 1 && (key_hasher.hash(curr_bucket.key_sum) == curr_bucket.hash_sum);
+		return abs(curr_bucket.count) == 1 
+               && (key_hasher.hash(curr_bucket.key_sum) == curr_bucket.hash_sum);
 	}
 
 	//returns the bucket index of given key in given subIBLT

@@ -1,8 +1,12 @@
+#ifndef _STRATA_ESTIMATOR
+#define _STRATA_ESTIMATOR
+
 #include <vector>
+
 #include "basicIBLT.hpp"
-#include "multiIBLT.hpp"
-#include "hash_util.hpp"
 #include "file_sync.pb.h"
+#include "hash_util.hpp"
+#include "multiIBLT.hpp"
 
 //TODO: Paramaterize by IBLT type?
 template <typename hash_type, typename iblt_type = basicIBLT<hash_type> >
@@ -60,9 +64,7 @@ class StrataEstimator {
 		for(int i = num_strata - 1; i >= 0; --i) {
 			std::unordered_set<hash_type> peeled_keys;
 			bool res = iblts[i]->peel(peeled_keys);
-			// std::cout << "Peeled number of keys: " << peeled_keys.size() << std::endl;
 			if( !res ) {
-				// std::cout << "Failed to peel on layer " << i << std::endl;
 				return (1 << (i+1)) * count;
 			}
 			count += peeled_keys.size();
@@ -92,3 +94,5 @@ class StrataEstimator {
 	}
 
 };
+
+#endif

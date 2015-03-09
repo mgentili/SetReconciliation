@@ -1,12 +1,12 @@
 #ifndef _NETWORK
 #define _NETWORK
 
-#include <vector>
 #include <cmath>
 #include <deque>
+#include <vector>
 
-#include "IBLT_helpers.hpp"
 #include "basicField.hpp"
+#include "IBLT_helpers.hpp"
 #include "multiIBLT.hpp"
 
 #define NETWORK_DEBUG 0
@@ -49,10 +49,11 @@ class random_network: public network_type {
 		
 	random_network(int n_nodes, double edge_prob): network_type(n_nodes), p(edge_prob), gen(rd()), dis(0,1) {}
 
-	random_network(int n_nodes): network_type(n_nodes), gen(rd()), dis(0,1) {
-		p = 2*log(n_nodes)/n_nodes;
-		NET_DEBUG( "Probability of edge existing is " << p );	
-	};
+	random_network(int n_nodes): random_network(n_nodes, 2*log(n_nodes)/n_nodes) {};
+    //network_type(n_nodes), gen(rd()), dis(0,1) {
+	//	p = 2*log(n_nodes)/n_nodes;
+	//	NET_DEBUG( "Probability of edge existing is " << p );	
+	//};
 
 	void create_network(std::vector<std::vector<int> >& list) {
 		do {

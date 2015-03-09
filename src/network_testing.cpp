@@ -1,7 +1,10 @@
 #include "network.hpp"
-#include "IBLT_helpers.hpp"
+
 #include <iostream>
+
+#include "IBLT_helpers.hpp"
 #include "json/json.h"
+
 //#define PRIME 17
 //#define PRIME 101
 //#define PRIME 251
@@ -18,9 +21,6 @@ template <typename key_type>
 void printPeeledKeys(std::vector<std::unordered_set<key_type>>& peeled_keys) {
 	for(size_t i = 0; i < peeled_keys.size(); ++i) {
 		std::cout << i << " has " << peeled_keys[i].size() << " keys " << std::endl;
-//		for(auto it = peeled_keys[i].begin(); it != peeled_keys[i].end(); ++it) {
-//			std::cout << *it << std::endl;
-//		}
 	}
 }
 
@@ -40,7 +40,9 @@ double percentSuccessfullyPeeled(std::vector<std::unordered_set<key_type>>& peel
 		}
 		numer += curr_count;
 	}
-	Json::Value num_failed_keys(denom-numer), num_failed_parties(failed_parties), pct_transmitted((double) numer/denom);
+	Json::Value num_failed_keys(denom-numer), 
+                num_failed_parties(failed_parties), 
+                pct_transmitted((double) numer/denom);
 	info["failed_keys"] = num_failed_keys;
 	info["num_failed_parties"] = num_failed_parties;
 	info["pct_transmitted"] = pct_transmitted;
@@ -49,7 +51,8 @@ double percentSuccessfullyPeeled(std::vector<std::unordered_set<key_type>>& peel
 }
 
 template <typename key_type>
-void processPeeledKeys(std::vector<std::unordered_set<key_type> >& peeled_keys, size_t num_distinct_keys ) {
+void processPeeledKeys(std::vector<std::unordered_set<key_type> >& peeled_keys, 
+                       size_t num_distinct_keys ) {
 	Json::Value failed_array;
 	for(auto it = peeled_keys.begin(); it != peeled_keys.end(); ++it ) {
 		Json::Value new_val((int) (num_distinct_keys - it->size()));
@@ -67,7 +70,8 @@ void testCompleteNetwork2() {
 	keyHandler<key_type> kh;
 
 	std::unordered_set<key_type> keys;
-	std::vector<std::unordered_set<key_type> > key_assignments(n_nodes), init_peeled_keys(n_nodes);
+	std::vector<std::unordered_set<key_type> > key_assignments(n_nodes), 
+                                               init_peeled_keys(n_nodes);
 	kh.generate_distinct_keys(n_nodes, keys);
 	int i = 0;
 	for(auto it = keys.begin(); it != keys.end(); ++it, ++i ) {
@@ -87,8 +91,9 @@ void testCompleteNetwork2() {
 	}
 	
 	
-	Json::Value num_distinct_keys((int) distinct_keys.size()), num_rounds((int) net.iter);
-	Json::Value prime_val(net.nodes[0]->get_prime());
+	Json::Value num_distinct_keys((int) distinct_keys.size()), 
+                num_rounds((int) net.iter),
+                prime_val(net.nodes[0]->get_prime());
 	info["num_distinct_keys"] = num_distinct_keys;
 	info["num_rounds"] = num_rounds;
 	info["prime"] = prime_val;

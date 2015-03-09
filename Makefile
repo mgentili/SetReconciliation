@@ -1,4 +1,4 @@
-CXX=g++
+CXX=clang++
 RM=-rm -f
 
 # Uncomment one of the following to switch between optimized and debug mode
@@ -11,7 +11,7 @@ COMMON_SRCS=hash_util.cpp IBLT_helpers.cpp jsoncpp.cpp
 BASIC_IBLT_SRCS=basicIBLT_testing.cpp
 MULTI_IBLT_SRCS=multiIBLT_testing.cpp
 TABULATION_SRCS=tabulation_testing.cpp
-BASIC_FIELD_SRCS=field_testing.cpp
+BASIC_FIELD_SRCS=basicField_testing.cpp
 FINGERPRINT_SRCS=fingerprint_testing.cpp
 FILE_SYNC_SRCS=file_sync_testing.cpp file_sync.pb.cpp
 STRATA_SRCS=StrataEstimator_testing.cpp
@@ -24,7 +24,7 @@ OBJS=$(SRCS:%.cpp=obj/%.o)
 BASIC_IBLT=bin/basicIBLT_testing
 MULTI_IBLT=bin/multiIBLT_testing
 TABULATION=bin/tabulation_testing
-BASIC_FIELD=bin/field_testing
+BASIC_FIELD=bin/basicField_testing
 FINGERPRINT=bin/fingerprint_testing
 SYNC=bin/file_sync_testing
 STRATA=bin/strata_testing

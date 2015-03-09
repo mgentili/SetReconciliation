@@ -1,5 +1,6 @@
-#include "IBLT_helpers.hpp"
 #include "hash_util.hpp"
+
+#include "IBLT_helpers.hpp"
 static inline uint64_t hashBits( uint64_t hash, int bits ) {
 	return( ((1UL << bits) - 1) & hash );
 }
@@ -24,7 +25,6 @@ void hashCollisionTest(int num_bits, int num_trials) {
 	}
 
 }
-
 
 int main() {
 	int num_bits = 41;

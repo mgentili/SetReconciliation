@@ -1,24 +1,29 @@
 #ifndef _MULTI_IBLT
 #define _MULTI_IBLT
 
-#include <vector>
-#include <stdint.h>
 #include <assert.h>
-#include <functional>
+#include <stdint.h>
+
+#include <algorithm>
+#include <bitset>
 #include <cstdlib>
 #include <deque>
-#include <algorithm>
+#include <functional>
 #include <set>
-#include <unordered_set>
-#include <bitset>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 #include "tabulation_hashing.hpp"
 #include "hash_util.hpp"
 #include "basicField.hpp"
 #include "file_sync.pb.h"
 
 //structure of a bucket within an IBLT
-template <size_t n_parties = 2, typename key_type = uint32_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint32_t>
+template <size_t n_parties = 2, 
+          typename key_type = uint32_t, 
+          size_t key_bits= 8*sizeof(key_type),
+          typename hash_type = uint32_t>
 class multiIBLT_bucket {
   public:
   	typedef multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> this_bucket_type;
@@ -105,7 +110,10 @@ class multiIBLT_bucket {
 	}
 };
 
-template <size_t n_parties = 2, typename key_type = uint32_t, size_t key_bits= 8*sizeof(key_type), typename hash_type = uint32_t>
+template <size_t n_parties = 2,
+          typename key_type = uint32_t,
+          size_t key_bits= 8*sizeof(key_type),
+          typename hash_type = uint32_t>
 class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> {
   public:
   	typedef multiIBLT_bucket<n_parties, key_type, key_bits, hash_type> parent_bucket_type;
@@ -132,14 +140,6 @@ class multiIBLT_bucket_extended: public multiIBLT_bucket<n_parties, key_type, ke
 			has_key[i] = bucket.has_key(i);
 		}
 	}
-
-	// void serialize(file_sync::IBLT_bucket& bucket) {
-	// 	parent_bucket_type::serialize();
-	// }
-
-	// void deserialize(const file_sync::IBLT_bucket& bucket) {
-	// 	parent_bucket_type::deserialize();
-	// }
 
 	void add(const this_bucket_type& counterparty_bucket) {
 		parent_bucket_type::add(counterparty_bucket);
@@ -247,7 +247,7 @@ class multiIBLT {
 	void serialize(file_sync::IBLT& iblt_serialized) {
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			for(size_t j = 0; j < buckets_per_subIBLT; ++j) {
-				file_sync::IBLT_bucket_extended* bucket = iblt_serialized.add_buckets();
+				file_sync::IBLT_bucket* bucket = iblt_serialized.add_buckets();
 				subIBLTs[i][j].serialize(*bucket);
 			}
 		}
@@ -298,7 +298,6 @@ class multiIBLT {
 	void insert_key(const key_type& key) {
 		size_t bucket_index;
 		hash_type hashval = key_hasher.hash(key);
-		//std::cout << "Inserting key " << key << " with hash " << hashval << std::endl;
 		for(size_t i = 0; i < num_hashfns; ++i) {
 			bucket_index = get_bucket_index(key, i);
 			subIBLTs[i][bucket_index].add( key, hashval);
@@ -314,7 +313,7 @@ class multiIBLT {
 		}
 	}	
 
-		//peels the keys from an IBLT, returning true upon success, false upon failure
+	//peels the keys from an IBLT, returning true upon success, false upon failure
 	bool peel(std::unordered_set<key_type>& peeled_keys ) {
 		std::deque<bucket_type> peelable_keys;
 		bucket_type curr_bucket;
@@ -327,10 +326,10 @@ class multiIBLT {
 				peelable_keys.pop_front();
 				key_type peeled_key;
 				curr_bucket.key_sum.extract_key(peeled_key);
-				if( peeled_keys.find(peeled_key) == peeled_keys.end()) { // haven't peeled this key before
+			    //haven't peeled this key before
+                if( peeled_keys.find(peeled_key) == peeled_keys.end()) { 
 					peeled_keys.insert(peeled_key);
 					peel_key( curr_bucket, peelable_keys );
-				} else {
 				}
 			}
 
@@ -379,8 +378,8 @@ class multiIBLT {
 		}
 		return peeled_key;
 	}
+
 //Below should be private at some point
-	
 	void peel_key(bucket_type& peelable_bucket, std::deque<bucket_type>& peelable_keys) {
 		size_t bucket_index;
 		for(size_t i = 0; i < num_hashfns; ++i) {
@@ -397,7 +396,6 @@ class multiIBLT {
 	bool can_peel(bucket_type& curr_bucket) {
 		int count = curr_bucket.count.get_contents();
 		if( count == 0 ) {
-			//printf("Current bucket count is: %d\n", curr_bucket.count.get_contents());
 			return false;
 		}
 		
@@ -410,10 +408,7 @@ class multiIBLT {
 			curr_bucket.key_sum.extract_key(buf);
 			curr_bucket.hash_sum.extract_key(expected_hash);
 			hash_type actual_hash = key_hasher.hash(buf);
-			//std::cout << "Buffer: " << buf << ", Actual Hash: " << actual_hash << ", Expected Hash: " << expected_hash << std::endl;
 			if( expected_hash == actual_hash) {
-					// printf("Curr bucket count disagrees\n");
-					// curr_bucket.print_contents();
 				return true;
 			}
 		}
