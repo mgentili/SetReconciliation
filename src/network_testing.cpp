@@ -13,6 +13,8 @@
 //#define PRIME 39373
 //#define PRIME 104729
 #define BIG_PRIME 860117
+#define MASSIVE_PRIME 67867979
+#define GINORMO_PRIME 1000000007
 
 Json::Value info;
 Json::StyledWriter writer;
@@ -104,27 +106,27 @@ void testCompleteNetwork2() {
 }
 
 int main() {
-	int num_trials = 10;
+	int num_trials = 20;
 	for(int i = 0; i < num_trials; ++i) {
-		testCompleteNetwork2<10, BIG_PRIME>();
-		testCompleteNetwork2<20, BIG_PRIME>();
-		testCompleteNetwork2<40, BIG_PRIME>();
-		testCompleteNetwork2<80, BIG_PRIME>();
-		testCompleteNetwork2<160, BIG_PRIME>();
-		testCompleteNetwork2<320, BIG_PRIME>();
-		testCompleteNetwork2<640, BIG_PRIME>();
-		testCompleteNetwork2<1280, BIG_PRIME>();
+		testCompleteNetwork2<10, GINORMO_PRIME>();
+		testCompleteNetwork2<20, GINORMO_PRIME>();
+		testCompleteNetwork2<40, GINORMO_PRIME>();
+		testCompleteNetwork2<80, GINORMO_PRIME>();
+		testCompleteNetwork2<160, GINORMO_PRIME>();
+		testCompleteNetwork2<320, GINORMO_PRIME>();
+		testCompleteNetwork2<640, GINORMO_PRIME>();
+		testCompleteNetwork2<1280, GINORMO_PRIME>();
 	}
 
-	for(int i = 0; i < num_trials; ++i) {
-		testCompleteNetwork2<10, SMALL_PRIME>();
-		testCompleteNetwork2<20, SMALL_PRIME>();
-		testCompleteNetwork2<40, SMALL_PRIME>();
-		testCompleteNetwork2<80, SMALL_PRIME>();
-		testCompleteNetwork2<160, SMALL_PRIME>();
-		testCompleteNetwork2<320, SMALL_PRIME>();
-		testCompleteNetwork2<640, SMALL_PRIME>();
-		testCompleteNetwork2<1280, SMALL_PRIME>();
-	}
+//	for(int i = 0; i < num_trials; ++i) {
+//		testCompleteNetwork2<10, SMALL_PRIME>();
+//		testCompleteNetwork2<20, SMALL_PRIME>();
+//		testCompleteNetwork2<40, SMALL_PRIME>();
+//		testCompleteNetwork2<80, SMALL_PRIME>();
+//		testCompleteNetwork2<160, SMALL_PRIME>();
+//		testCompleteNetwork2<320, SMALL_PRIME>();
+//		testCompleteNetwork2<640, SMALL_PRIME>();
+//		testCompleteNetwork2<1280, SMALL_PRIME>();
+//	}
 	return 1;
 }
