@@ -1,6 +1,7 @@
 #include "network.hpp"
 
 #include <iostream>
+#include <cstdlib>
 
 #include "IBLT_helpers.hpp"
 #include "json/json.h"
@@ -63,6 +64,33 @@ void processPeeledKeys(std::vector<std::unordered_set<key_type> >& peeled_keys,
 
 	info["nodes"] = failed_array;
 }
+
+
+double generate_rand_double() {
+    return (double) rand() / RAND_MAX;
+}
+
+template <typename key_type>
+void determine_key_assignments_simple(
+        const std::unordered_set<key_type>& keys,
+        std::vector<std::unordered_set<key_type> >& key_assignments) {
+    int i = 0;
+    for(auto it = keys.begin(); it != keys.end(); ++it, ++i ) {
+        key_assignments[i].insert(*it);
+    }
+}
+
+template <typename key_type>
+void determine_key_assignments_random(
+        const std::unordered_set<key_type>& keys,
+        std::vector<std::unordered_set<key_type> >& key_assignments,
+        double rand_prob) {
+    for(auto it = keys.begin(); it != keys.end(); ++it ) 
+        for(int i = 0; i < key_assignments.size(); ++i)
+            if( generate_rand_double() < rand_prob )
+                key_assignments[i].insert(*it);
+}
+
 template <int n_nodes, int prime>
 void testCompleteNetwork2() {
 	typedef uint64_t key_type;
@@ -75,10 +103,10 @@ void testCompleteNetwork2() {
 	std::vector<std::unordered_set<key_type> > key_assignments(n_nodes), 
                                                init_peeled_keys(n_nodes);
 	kh.generate_distinct_keys(n_nodes, keys);
-	int i = 0;
-	for(auto it = keys.begin(); it != keys.end(); ++it, ++i ) {
-		key_assignments[i].insert(*it);
-	}
+
+    //determine_key_assignments_simple<key_type>(keys, key_assignments);
+    determine_key_assignments_random<key_type>(keys, key_assignments, 0.9);
+
 	std::unordered_set<key_type> distinct_keys;
 	kh.distinct_keys(key_assignments, distinct_keys);
 	net.setup(key_assignments);
@@ -106,7 +134,7 @@ void testCompleteNetwork2() {
 }
 
 int main() {
-	int num_trials = 20;
+	int num_trials = 100;
 	for(int i = 0; i < num_trials; ++i) {
 		testCompleteNetwork2<10, GINORMO_PRIME>();
 		testCompleteNetwork2<20, GINORMO_PRIME>();
